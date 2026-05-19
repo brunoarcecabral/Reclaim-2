@@ -131,3 +131,56 @@ void APracricaCppCharacter::DoJumpEnd()
 	// signal the character to stop jumping
 	StopJumping();
 }
+
+
+void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
+{
+	// 1. Sumamos la experiencia obtenida a la actual
+	CExperienciaActual += CExpObtenida;
+
+	// Usamos una variable temporal para saber si tenemos que tirar el mensaje de victoria
+	bool bSubioDeNivel = false;
+
+	// 2. Evaluamos si alcanza para subir de nivel (El while nos protege por si gana mucha exp de golpe)
+	while (CExperienciaActual >= CExperienciaRequerida)
+	{
+		bSubioDeNivel = true;
+
+		// Aumentamos el nivel
+		CNivelActual++; 
+
+		// Restamos la experiencia que "costó" subir de nivel
+		CExperienciaActual -= CExperienciaRequerida;
+
+		// Aumentamos la exp requerida en un 10% (agregamos la 'f' al final de 10.0 para que Unreal sepa que es float)
+		CExperienciaRequerida += (CExperienciaRequerida / 10.0f);
+	}
+
+	// 3. Los Print Strings
+	if (bSubioDeNivel)
+	{
+		// Armamos el super mensaje de victoria
+		// Ojo: Usamos (int32) delante de CNivelActual para esconderle los decimales en el texto.
+		// Además, le sumo 1 al segundo CNivelActual para que te muestre correctamente cuál es tu PRÓXIMO nivel.
+		FString MensajeVictoria = FString::Printf(TEXT("FELICIDADES\nSubiste al nivel:\n%d\nProximo Nivel: %d\n(Requiere %.1f EXP)\nEXP Actual: %.1f"), 
+			(int32)CNivelActual, (int32)CNivelActual + 1, CExperienciaRequerida, CExperienciaActual);
+
+		if (GEngine)
+		{
+			// FColor::Cyan es ese turquesa que tenías, dura 10 segundos
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Magenta, MensajeVictoria);
+		}
+	}
+	else
+	{
+		// Armamos el mensaje corto de cuando no alcanza para subir
+		FString MensajeCorto = FString::Printf(TEXT("Experiencia Actual:\n%.1f"), CExperienciaActual);
+
+		if (GEngine)
+		{
+			// Dura 2 segundos
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, MensajeCorto);
+		}
+	}
+}
+
