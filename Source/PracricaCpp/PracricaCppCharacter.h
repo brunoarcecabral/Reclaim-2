@@ -84,6 +84,23 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+	
+	
+	
+	// Variables de tu sistema (les pongo EditAnywhere para que puedas tocar los valores base en el editor)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+	float CExperienciaActual = 0.0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+	float CExperienciaRequerida = 40.0; // Ponele el valor inicial que quieras
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+	float CNivelActual = 1;
+
+	// La función que vas a llamar cada vez que el personaje gane EXP (por ejemplo, al derrotar un enemigo)
+	UFUNCTION(BlueprintCallable, Category = "Progresion")
+	void CGanarExperiencia(float CExpObtenida);
+	
 
 public:
 
