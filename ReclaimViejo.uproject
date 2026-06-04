@@ -1,56 +1,54 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "5.7",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "PracricaCpp",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"UMG"
-			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true
-		},
-		{
-			"Name": "StateTree",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayStateTree",
-			"Enabled": true
-		},
-		{
-			"Name": "VisualStudioTools",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win64"
-			],
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/362651520df94e4fa65492dbcba44ae2"
-		},
-		{
-			"Name": "Buoyancy",
-			"Enabled": true
-		},
-		{
-			"Name": "PCGWaterInterop",
-			"Enabled": true
-		},
-		{
-			"Name": "WaterAdvanced",
-			"Enabled": true
-		},
-		{
-			"Name": "WaterExtras",
-			"Name": "SteamSockets",
-			"Enabled": true
-		}
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "5.7",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "PracricaCpp",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "ModelingToolsEditorMode",
+      "Enabled": true
+    },
+    {
+      "Name": "StateTree",
+      "Enabled": true
+    },
+    {
+      "Name": "GameplayStateTree",
+      "Enabled": true
+    },
+    {
+      "Name": "VisualStudioTools",
+      "Enabled": false,
+      "SupportedTargetPlatforms": [
+        "Win64"
+      ]
+    },
+    {
+      "Name": "Buoyancy",
+      "Enabled": true
+    },
+    {
+      "Name": "PCGWaterInterop",
+      "Enabled": true
+    },
+    {
+      "Name": "WaterAdvanced",
+      "Enabled": true
+    },
+    {
+      "Name": "SteamSockets",
+      "Enabled": true
+    }
+  ],
+  "TargetPlatforms": [],
+  "AdditionalRootDirectories": [],
+  "AdditionalPluginDirectories": [],
+  "EpicSampleNameHash": ""
 }
