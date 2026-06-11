@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "MisClases/TPKent/PuzzleManagerComponent.h" // Agregamos el include del componente
 #include "PracricaCppCharacter.generated.h"
 
 class USpringArmComponent;
@@ -14,100 +15,80 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-/**
- *  A simple player-controllable third person character
- *  Implements a controllable orbiting camera
- */
 UCLASS()
 class APracricaCppCharacter : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+    USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-	
-protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+    UCameraComponent* FollowCamera;
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* LookAction;
-
-	/** Mouse Look Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* MouseLookAction;
-
-public:
-
-	/** Constructor */
-	APracricaCppCharacter();	
+    // El componente principal del puzzle, vive en el jugador
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+    UPuzzleManagerComponent* PuzzleManager;
 
 protected:
 
-	/** Initialize input action bindings */
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    UPROPERTY(EditAnywhere, Category="Input")
+    UInputAction* JumpAction;
+
+    UPROPERTY(EditAnywhere, Category="Input")
+    UInputAction* MoveAction;
+
+    UPROPERTY(EditAnywhere, Category="Input")
+    UInputAction* LookAction;
+
+    UPROPERTY(EditAnywhere, Category="Input")
+    UInputAction* MouseLookAction;
+
+    // Input action para interactuar (la tecla E por ejemplo)
+    UPROPERTY(EditAnywhere, Category="Input")
+    UInputAction* InteractAction;
+
+public:
+    APracricaCppCharacter();
 
 protected:
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+protected:
+    void Move(const FInputActionValue& Value);
+    void Look(const FInputActionValue& Value);
 
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-
-public:
-
-	/** Handles move inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoMove(float Right, float Forward);
-
-	/** Handles look inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoLook(float Yaw, float Pitch);
-
-	/** Handles jump pressed inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoJumpStart();
-
-	/** Handles jump pressed inputs from either controls or UI interfaces */
-	UFUNCTION(BlueprintCallable, Category="Input")
-	virtual void DoJumpEnd();
-	
-	
-	
-	// Variables de tu sistema (les pongo EditAnywhere para que puedas tocar los valores base en el editor)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
-	float CExperienciaActual = 0.0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
-	float CExperienciaRequerida = 40.0; // Ponele el valor inicial que quieras
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
-	float CNivelActual = 1;
-
-	// La función que vas a llamar cada vez que el personaje gane EXP (por ejemplo, al derrotar un enemigo)
-	UFUNCTION(BlueprintCallable, Category = "Progresion")
-	void CGanarExperiencia(float CExpObtenida);
-	
+    // Funcion que se llama cuando el jugador presiona la tecla de interaccion
+    void Interact();
 
 public:
+    UFUNCTION(BlueprintCallable, Category="Input")
+    virtual void DoMove(float Right, float Forward);
 
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+    UFUNCTION(BlueprintCallable, Category="Input")
+    virtual void DoLook(float Yaw, float Pitch);
 
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+    UFUNCTION(BlueprintCallable, Category="Input")
+    virtual void DoJumpStart();
+
+    UFUNCTION(BlueprintCallable, Category="Input")
+    virtual void DoJumpEnd();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+    float CExperienciaActual = 0.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+    float CExperienciaRequerida = 40.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+    float CNivelActual = 1;
+
+    UFUNCTION(BlueprintCallable, Category = "Progresion")
+    void CGanarExperiencia(float CExpObtenida);
+
+    FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+    FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+    // Para que otros actores puedan obtener el componente del puzzle
+    FORCEINLINE UPuzzleManagerComponent* GetPuzzleManager() const { return PuzzleManager; }
 };
-

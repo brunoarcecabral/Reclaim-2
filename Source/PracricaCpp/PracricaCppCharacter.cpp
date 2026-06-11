@@ -1,6 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
+// Este include SIEMPRE tiene que ser el primero en Unreal
 #include "PracricaCppCharacter.h"
+
+// Recien despues vienen los demas includes
+#include "MisClases/TPKent/PuzzleManagerComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,6 +13,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "PracricaCpp.h"
+
 
 APracricaCppCharacter::APracricaCppCharacter()
 {
@@ -48,6 +51,9 @@ APracricaCppCharacter::APracricaCppCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	
+	///// Creamos el componente del puzzle y lo adjuntamos al jugador
+	PuzzleManager = CreateDefaultSubobject<UPuzzleManagerComponent>(TEXT("PuzzleManager"));
 }
 
 void APracricaCppCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,6 +71,9 @@ void APracricaCppCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APracricaCppCharacter::Look);
+		
+		// Interaccion (se llama Interact() cuando se presiona la tecla)
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &APracricaCppCharacter::Interact);
 	}
 	else
 	{
@@ -181,6 +190,15 @@ void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
 			// Dura 2 segundos
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, MensajeCorto);
 		}
+	}
+}
+
+void APracricaCppCharacter::Interact()
+{
+	// Le delegamos la logica al PuzzleManager
+	if (PuzzleManager)
+	{
+		PuzzleManager->TryInteract();
 	}
 }
 
