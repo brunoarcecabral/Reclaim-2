@@ -11,6 +11,20 @@ UPuzzleManagerComponent::UPuzzleManagerComponent()
 void UPuzzleManagerComponent::BeginPlay()
 {
     Super::BeginPlay();
+
+    // Creamos el widget del codice al inicio y lo mostramos
+    if (CodexWidgetClass)
+    {
+        APlayerController* PC = GetWorld()->GetFirstPlayerController();
+        if (PC)
+        {
+            CodexWidget = CreateWidget<UPuzzleCodexWidget>(PC, CodexWidgetClass);
+            if (CodexWidget)
+            {
+                CodexWidget->AddToViewport();
+            }
+        }
+    }
 }
 
 void UPuzzleManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -116,8 +130,27 @@ void UPuzzleManagerComponent::OnTileStep(FPuzzleObjectData TileData)
         UE_LOG(LogTemp, Log, TEXT("[PUZZLE] Secuencia correcta!"));
         OnPuzzleCompleted.Broadcast();
     }
-}
 
+    CurrentSequence.Add(TileData.ColorInitial);
+
+    // Actualizamos el widget del codice
+    if (CodexWidget)
+    {
+        CodexWidget->AddColorEntry(TileData);
+    }
+
+    if (CurrentSequence == CorrectSequence)
+    {
+        UE_LOG(LogTemp, Log, TEXT("[PUZZLE] Secuencia correcta!"));
+        OnPuzzleCompleted.Broadcast();
+
+        // El codice queda permanente
+        if (CodexWidget)
+        {
+            CodexWidget->MakePermanent();
+        }
+    }
+}
 void UPuzzleManagerComponent::OnPasswordPanelEnter(AActor* Panel)
 {
     ActivePasswordPanel = Panel;
@@ -135,4 +168,20 @@ void UPuzzleManagerComponent::OpenPasswordWidget(AActor* Panel)
 {
     // Aqui despues abriremos el widget de contrasena
     UE_LOG(LogTemp, Log, TEXT("[PANEL] Abriendo widget de contrasena"));
+
+    if (!PasswordWidgetClass) return;
+
+    APlayerController* PC = GetWorld()->GetFirstPlayerController();
+    if (!PC) return;
+
+    PasswordWidget = CreateWidget<UPuzzlePasswordWidget>(PC, PasswordWidgetClass);
+    if (PasswordWidget)
+    {
+        PasswordWidget->OwningPanel = Panel;
+        PasswordWidget->AddToViewport();
+
+        // Mostramos el cursor para que pueda escribir
+        PC->SetInputMode(FInputModeUIOnly());
+        PC->bShowMouseCursor = true;
+    }
 }

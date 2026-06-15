@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "MisClases/TPKent/IPuzzleInteractable.h" // Necesitamos el struct y la interface
+#include "MisClases/TPKent/PuzzleCodexWidget.h"
+#include "MisClases/TPKent/PuzzlePasswordWidget.h"
 #include "PuzzleManagerComponent.generated.h"
 
 // ============================================================
@@ -117,6 +119,20 @@ public:
     // Panel activo actualmente
     UPROPERTY(BlueprintReadOnly, Category="Puzzle")
     AActor* ActivePasswordPanel = nullptr;
+
+    // Clases de los widgets, se asignan en el Blueprint del Character
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Puzzle|Widgets")
+    TSubclassOf<UPuzzleCodexWidget> CodexWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Puzzle|Widgets")
+    TSubclassOf<UPuzzlePasswordWidget> PasswordWidgetClass;
+
+    // Instancias activas
+    UPROPERTY(BlueprintReadOnly, Category="Puzzle|Widgets")
+    UPuzzleCodexWidget* CodexWidget = nullptr;
+
+    UPROPERTY(BlueprintReadOnly, Category="Puzzle|Widgets")
+    UPuzzlePasswordWidget* PasswordWidget = nullptr;
 
 protected:
     virtual void BeginPlay() override;
