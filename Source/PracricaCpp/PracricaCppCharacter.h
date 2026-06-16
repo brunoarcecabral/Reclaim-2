@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "MisClases/TPKent/PuzzleManagerComponent.h" // Agregamos el include del componente
 #include "PracricaCppCharacter.generated.h"
 
 class USpringArmComponent;
@@ -26,9 +25,7 @@ class APracricaCppCharacter : public ACharacter
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
     UCameraComponent* FollowCamera;
 
-    // El componente principal del puzzle, vive en el jugador
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-    UPuzzleManagerComponent* PuzzleManager;
+  
 
 protected:
 
@@ -88,7 +85,5 @@ public:
 
     FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
     FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-    // Para que otros actores puedan obtener el componente del puzzle
-    FORCEINLINE UPuzzleManagerComponent* GetPuzzleManager() const { return PuzzleManager; }
+    
 };

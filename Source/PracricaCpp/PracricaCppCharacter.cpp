@@ -2,7 +2,6 @@
 #include "PracricaCppCharacter.h"
 
 // Recien despues vienen los demas includes
-#include "MisClases/TPKent/PuzzleManagerComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -52,8 +51,7 @@ APracricaCppCharacter::APracricaCppCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 	
-	///// Creamos el componente del puzzle y lo adjuntamos al jugador
-	PuzzleManager = CreateDefaultSubobject<UPuzzleManagerComponent>(TEXT("PuzzleManager"));
+
 }
 
 void APracricaCppCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -192,13 +190,7 @@ void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
 		}
 	}
 }
-
 void APracricaCppCharacter::Interact()
 {
-	// Le delegamos la logica al PuzzleManager
-	if (PuzzleManager)
-	{
-		PuzzleManager->TryInteract();
-	}
-}
-
+	// Por ahora vacía, la lógica la manejamos en Blueprint
+};

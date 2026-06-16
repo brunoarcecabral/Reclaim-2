@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "AColorButton.generated.h"
+#include "TilesDeColores.generated.h"
 
 UCLASS()
-class PRACRICACPP_API AAColorButton : public AActor
+class PRACRICACPP_API ATilesDeColores : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AAColorButton();
+	ATilesDeColores();
 
 protected:
 	// Called when the game starts or when spawned
