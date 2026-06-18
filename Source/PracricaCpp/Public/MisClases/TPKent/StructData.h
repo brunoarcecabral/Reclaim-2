@@ -3,15 +3,30 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Class.h"
 #include "StructData.generated.h"
 
-/**
- * 
- */
-UCLASS()
-class PRACRICACPP_API UStructData : public UStruct
+USTRUCT(BlueprintType)
+struct PRACRICACPP_API FStructData
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StructData")
+	FString MyString = TEXT("");
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StructData")
+	FVector MyVector = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StructData")
+	bool bMyBool = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StructData")
+	float MyFloat = 0.0f;
+
+	// Constructor por defecto (opcional pero buena práctica)
+	FStructData()
+		: MyString(TEXT(""))
+		, MyVector(FVector::ZeroVector)
+		, bMyBool(false)
+		, MyFloat(0.0f)
+	{}
 };

@@ -1,19 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "StructData.h"  // <-- Agregado
-#include "TilesDeColores.generated.h"
+#include "StructData.h"  // <-- Agregá este include
+#include "CuadradoLlave.generated.h"
 
 UCLASS()
-class PRACRICACPP_API ATilesDeColores : public AActor
+class PRACRICACPP_API ACuadradoLlave : public AActor
 {
 	GENERATED_BODY()
     
 public: 
-	ATilesDeColores();
+	ACuadradoLlave();
 
 protected:
 	virtual void BeginPlay() override;
