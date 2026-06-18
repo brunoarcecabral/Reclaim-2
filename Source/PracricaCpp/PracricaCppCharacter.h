@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "MisClases/TPKent/ComunicacionPuzzle.h"
+#include "MisClases/TPKent/InterfaceColores.h"
 #include "PracricaCppCharacter.generated.h"
 
 class USpringArmComponent;
@@ -15,7 +17,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS()
-class APracricaCppCharacter : public ACharacter
+class APracricaCppCharacter : public ACharacter, public IComunicacionPuzzle, public IInterfaceColores
 {
     GENERATED_BODY()
 
@@ -24,8 +26,6 @@ class APracricaCppCharacter : public ACharacter
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
     UCameraComponent* FollowCamera;
-
-  
 
 protected:
 
@@ -41,7 +41,6 @@ protected:
     UPROPERTY(EditAnywhere, Category="Input")
     UInputAction* MouseLookAction;
 
-    // Input action para interactuar (la tecla E por ejemplo)
     UPROPERTY(EditAnywhere, Category="Input")
     UInputAction* InteractAction;
 
@@ -54,8 +53,6 @@ protected:
 protected:
     void Move(const FInputActionValue& Value);
     void Look(const FInputActionValue& Value);
-
-    // Funcion que se llama cuando el jugador presiona la tecla de interaccion
     void Interact();
 
 public:
@@ -83,7 +80,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Progresion")
     void CGanarExperiencia(float CExpObtenida);
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Puzzle")
+    bool TengoLaLlave = false;
+
+    virtual void ComunicarPuzzle_Implementation(bool llave) override;
+    virtual void InformacionColor_Implementation(const FString& Color, bool ColorActivado) override;
+
     FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
     FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-    
 };

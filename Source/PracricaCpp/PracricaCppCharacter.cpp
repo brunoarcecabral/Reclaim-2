@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -192,5 +193,49 @@ void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
 }
 void APracricaCppCharacter::Interact()
 {
-	// Por ahora vacía, la lógica la manejamos en Blueprint
-};
+	// Start = posición del actor
+	FVector Start = GetActorLocation();
+
+	// End = Start + (ForwardVector * 100)
+	FVector End = Start + (GetActorForwardVector() * 100.f);
+
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+
+	UKismetSystemLibrary::LineTraceSingle(
+		this,
+		Start,
+		End,
+		ETraceTypeQuery::TraceTypeQuery1,
+		true,                            // bTraceComplex
+		ActorsToIgnore,
+		EDrawDebugTrace::ForOneFrame,
+		HitResult,
+		true                             // bIgnoreSelf
+	);
+
+	// Si golpeó algo y ese actor implementa la interfaz, la llama
+	if (HitResult.GetActor())
+	{
+		AActor* HitActor = HitResult.GetActor();
+		if (HitActor->GetClass()->ImplementsInterface(UComunicacionPuzzle::StaticClass()))
+		{
+			IComunicacionPuzzle::Execute_ComunicarPuzzle(HitActor, TengoLaLlave);
+		}
+	}
+
+}
+	
+	
+void APracricaCppCharacter::ComunicarPuzzle_Implementation(bool llave)
+{
+	TengoLaLlave = llave;
+}	
+void APracricaCppCharacter::InformacionColor_Implementation(const FString& Color, bool ColorActivado)
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, Color);
+	}
+	
+}

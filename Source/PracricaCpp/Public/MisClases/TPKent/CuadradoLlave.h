@@ -1,13 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "StructData.h"  // <-- Agregá este include
+#include "StructData.h"
+#include "ComunicacionPuzzle.h"
+#include "Kismet/GameplayStatics.h"  // <-- Agregado
 #include "CuadradoLlave.generated.h"
 
 UCLASS()
-class PRACRICACPP_API ACuadradoLlave : public AActor
+class PRACRICACPP_API ACuadradoLlave : public AActor, public IComunicacionPuzzle
 {
 	GENERATED_BODY()
     
@@ -20,7 +21,8 @@ protected:
 public: 
 	virtual void Tick(float DeltaTime) override;
 
-	// Variable del struct
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StructData")
 	FStructData MyData;
+
+	virtual void ComunicarPuzzle_Implementation(bool llave) override;
 };

@@ -1,27 +1,40 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MisClases/TPKent/CuadradoLlave.h"
+#include "GameFramework/Character.h"
 
-// Sets default values
 ACuadradoLlave::ACuadradoLlave()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+    PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
 void ACuadradoLlave::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
 }
 
-// Called every frame
 void ACuadradoLlave::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-
+    Super::Tick(DeltaTime);
 }
 
+void ACuadradoLlave::ComunicarPuzzle_Implementation(bool llave)
+{
+    // PrintString -> imprime MyData.MyString en pantalla
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, MyData.MyString);
+    }
+
+    // Branch -> chequea MyData.bMyBool
+    if (MyData.bMyBool)
+    {
+        // Llama la interfaz en el PlayerCharacter con Llave = true
+        ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+        if (PlayerCharacter && PlayerCharacter->GetClass()->ImplementsInterface(UComunicacionPuzzle::StaticClass()))
+        {
+            IComunicacionPuzzle::Execute_ComunicarPuzzle(PlayerCharacter, true);
+        }
+
+        // DestroyActor
+        Destroy();
+    }
+}

@@ -1,14 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "StructData.h"  // <-- Agregado
+#include "StructData.h"
+#include "MisClases/TPKent/ComunicacionPuzzle.h"
+#include "MisClases/TPKent/InterfaceColores.h"  // <-- Agregado
+#include "Kismet/KismetSystemLibrary.h"
 #include "TilesDeColores.generated.h"
 
 UCLASS()
-class PRACRICACPP_API ATilesDeColores : public AActor
+class PRACRICACPP_API ATilesDeColores : public AActor, public IComunicacionPuzzle
 {
 	GENERATED_BODY()
     
@@ -21,7 +22,14 @@ protected:
 public: 
 	virtual void Tick(float DeltaTime) override;
 
-	// Variable del struct
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StructData")
 	FStructData MyData;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Puzzle")
+	bool PuzzleActivad = false;
+
+	virtual void ComunicarPuzzle_Implementation(bool llave) override;
+
+private:
+	FTimerHandle CooldownTimer;
 };
