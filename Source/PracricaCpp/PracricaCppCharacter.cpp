@@ -1,5 +1,6 @@
 // Este include SIEMPRE tiene que ser el primero en Unreal
 #include "PracricaCppCharacter.h"
+#include "ShopActor.h"
 
 // Recien despues vienen los demas includes
 #include "Engine/LocalPlayer.h"
@@ -193,11 +194,9 @@ void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
 }
 void APracricaCppCharacter::Interact()
 {
-	// Start = posición del actor
-	FVector Start = GetActorLocation();
-
-	// End = Start + (ForwardVector * 100)
-	FVector End = Start + (GetActorForwardVector() * 100.f);
+	// El rayo sale a la altura de la cámara/personaje y sigue la dirección de la cámara.
+	FVector Start = GetActorLocation() + FVector(0.f, 0.f, 60.f);
+	FVector End = Start + (GetControlRotation().Vector() * 300.f);
 
 	FHitResult HitResult;
 	TArray<AActor*> ActorsToIgnore;
@@ -207,25 +206,39 @@ void APracricaCppCharacter::Interact()
 		Start,
 		End,
 		ETraceTypeQuery::TraceTypeQuery1,
-		true,                            // bTraceComplex
+		true,
 		ActorsToIgnore,
-		EDrawDebugTrace::ForOneFrame,
+		EDrawDebugTrace::ForDuration,
 		HitResult,
-		true                             // bIgnoreSelf
+		true
 	);
 
-	// Si golpeó algo y ese actor implementa la interfaz, la llama
-	if (HitResult.GetActor())
+	if (AActor* HitActor = HitResult.GetActor())
 	{
-		AActor* HitActor = HitResult.GetActor();
+		if (AShopActor* Shop = Cast<AShopActor>(HitActor))
+		{
+			Shop->Interact();
+			return;
+		}
+
 		if (HitActor->GetClass()->ImplementsInterface(UComunicacionPuzzle::StaticClass()))
 		{
 			IComunicacionPuzzle::Execute_ComunicarPuzzle(HitActor, TengoLaLlave);
+			return;
 		}
 	}
 
+	// Mensaje temporal para comprobar que E funciona aunque no golpee una tienda.
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			1.f,
+			FColor::Red,
+			TEXT("No hay nada interactuable frente a ti."));
+	}
 }
-	
+
 	
 void APracricaCppCharacter::ComunicarPuzzle_Implementation(bool llave)
 {
