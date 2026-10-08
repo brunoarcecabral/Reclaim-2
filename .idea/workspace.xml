@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeSettings">
+    <configurations />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="cb447026-9a22-4f1b-9d13-1196c53199d4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Alien_World_Bobble_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Alien_World_Bobble_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Alien_World_Swirl_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Alien_World_Swirl_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Alien_World_Voronian_03_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Alien_World_Voronian_03_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Canyon_04_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Canyon_04_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Canyon_18_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Canyon_18_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Canyon_Shapes_03_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Canyon_Shapes_03_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Craters_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Craters_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dover_Cliffs_06_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dover_Cliffs_06_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dover_Cliffs_15_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dover_Cliffs_15_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dune_Shapes_10_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dune_Shapes_10_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dunes_06_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dunes_06_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dunes_11_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dunes_11_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dunes_19_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Dunes_19_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Highlands_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Highlands_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Highlands_09_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Highlands_09_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Impact_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Impact_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Impact_14_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Impact_14_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Islands_07_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Islands_07_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Islands_23_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Islands_23_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Meadows_04_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Meadows_04_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Meadows_12_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Meadows_12_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Meadows_28_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Meadows_28_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Monument_Desert_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Monument_Desert_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Pride_Rocks_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Pride_Rocks_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Pride_Rocks_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Pride_Rocks_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Pride_Rocks_11_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Pride_Rocks_11_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rocky_Desert_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rocky_Desert_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rocky_Desert_12_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rocky_Desert_12_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rocky_Plateaus_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rocky_Plateaus_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rolling_Hills_06_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rolling_Hills_06_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rough_Cliffs_18_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rough_Cliffs_18_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Rocks_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Rocks_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Rocks_14_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Rocks_14_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Rocks_20_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Rocks_20_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Sedi_Rocks_08_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Sedi_Rocks_08_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Sedi_Rocks_24_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Rugged_Sedi_Rocks_24_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Sandy_Beaches_05_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Sandy_Beaches_05_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Seaside_Cliffs_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Seaside_Cliffs_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Seaside_Cliffs_06_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Seaside_Cliffs_06_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Stranger_Lands_02_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Stranger_Lands_02_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Stranger_Lands_06_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Stranger_Lands_06_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Stranger_Lands_24_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Stranger_Lands_24_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terrace_Fields_15_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terrace_Fields_15_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terraced_Cliffs_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terraced_Cliffs_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terraced_Cliffs_06_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terraced_Cliffs_06_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terraced_Cliffs_Drake_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Terraced_Cliffs_Drake_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Tundra_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Tundra_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Tundra_11_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Tundra_11_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Valleys_01_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Valleys_01_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Volcano_03_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Volcano_03_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Volcano_10_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Volcano_10_Ex.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Volcano_20_Ex.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StampIt/Examples/HM_Volcano_20_Ex.uasset" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Source/PracricaCpp/PracricaCppCharacter.cpp" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3KNY3MTDyogHU2DeimjS2J0KgmM" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cb447026-9a22-4f1b-9d13-1196c53199d4" name="Changes" comment="" />
+      <created>1791399294519</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791399294519</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.OperationCanceledException" breakIfHandledByOtherCode="false" displayValue="System.OperationCanceledException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.Tasks.TaskCanceledException" breakIfHandledByOtherCode="false" displayValue="System.Threading.Tasks.TaskCanceledException" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
