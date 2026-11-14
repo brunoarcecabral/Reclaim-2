@@ -18,10 +18,14 @@ public class PracricaCpp : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate"
+			"Slate",
+			"OnlineSubsystem",
+			"OnlineSubsystemUtils"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] { "SlateCore" });
+		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
+
 
 		PublicIncludePaths.AddRange(new string[] {
 			"PracricaCpp",
