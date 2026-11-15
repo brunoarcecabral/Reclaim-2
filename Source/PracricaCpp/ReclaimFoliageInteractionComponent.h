@@ -4,9 +4,17 @@
 #include "Components/ActorComponent.h"
 #include "ReclaimFoliageInteractionComponent.generated.h"
 
+class UStaticMesh;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FReclaimResultadoGolpeFoliage,
 	bool, bDetectado,
+	int32, GolpesAcumulados
+);
+
+// Se ejecuta en el servidor tras validar un golpe de foliage.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FReclaimGolpeFoliageValidado,
 	int32, GolpesAcumulados
 );
 
@@ -19,13 +27,19 @@ class PRACRICACPP_API UReclaimFoliageInteractionComponent
 public:
 	UReclaimFoliageInteractionComponent();
 
-	// Llamar desde el personaje que realiza el golpe.
 	UFUNCTION(BlueprintCallable, Category="Reclaim|Foliage")
 	void SolicitarGolpeFoliage();
 
-	// Avisa al jugador si el servidor detectó foliage y cuántos golpes lleva.
+	// Resultado enviado al jugador que solicitó el golpe.
 	UPROPERTY(BlueprintAssignable, Category="Reclaim|Foliage")
 	FReclaimResultadoGolpeFoliage OnResultadoGolpeFoliage;
+
+	// Evento para conectar la entrega de madera en el servidor.
+	UPROPERTY(BlueprintAssignable, Category="Reclaim|Foliage")
+	FReclaimGolpeFoliageValidado OnGolpeFoliageValidado;
+
+	UPROPERTY(EditAnywhere, Category="Reclaim|Foliage")
+	TArray<TObjectPtr<UStaticMesh>> MallasTalables;
 
 private:
 	UFUNCTION(Server, Reliable)

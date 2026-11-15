@@ -4,45 +4,86 @@
 #include "GameFramework/Actor.h"
 #include "ReclaimFoliageManager.generated.h"
 
+class UHierarchicalInstancedStaticMeshComponent;
+
 USTRUCT(BlueprintType)
 struct FReclaimFoliageEstado
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	// Ubicación de la instancia en el mundo.
-	UPROPERTY(BlueprintReadOnly, Category="Reclaim|Foliage")
-	FVector Ubicacion = FVector::ZeroVector;
+    UPROPERTY(BlueprintReadOnly, Category="Reclaim|Foliage")
+    FVector Ubicacion = FVector::ZeroVector;
 
-	// Cantidad de golpes recibidos por esa instancia.
-	UPROPERTY(BlueprintReadOnly, Category="Reclaim|Foliage")
-	int32 Golpes = 0;
+    UPROPERTY(BlueprintReadOnly, Category="Reclaim|Foliage")
+    int32 Golpes = 0;
+};
+
+// Identifica un árbol eliminado por su malla y su posición.
+USTRUCT()
+struct FReclaimFoliageTalado
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FVector Ubicacion = FVector::ZeroVector;
+
+    UPROPERTY()
+    FString RutaMalla;
 };
 
 UCLASS()
 class PRACRICACPP_API AReclaimFoliageManager : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AReclaimFoliageManager();
+    AReclaimFoliageManager();
 
-	virtual void GetLifetimeReplicatedProps(
-		TArray<FLifetimeProperty>& OutLifetimeProps
-	) const override;
+    virtual void GetLifetimeReplicatedProps(
+        TArray<FLifetimeProperty>& OutLifetimeProps
+    ) const override;
 
-	// Registra un golpe y devuelve el total acumulado.
-	// Debe ejecutarse en el servidor.
-	UFUNCTION(BlueprintCallable, Category="Reclaim|Foliage")
-	int32 RegistrarGolpe(FVector Ubicacion);
+    // Debe ejecutarse en el servidor.
+    UFUNCTION(BlueprintCallable, Category="Reclaim|Foliage")
+    int32 RegistrarGolpe(FVector Ubicacion);
 
-	// Consulta el estado compartido.
-	UFUNCTION(BlueprintPure, Category="Reclaim|Foliage")
-	int32 ObtenerGolpes(FVector Ubicacion) const;
+    UFUNCTION(BlueprintPure, Category="Reclaim|Foliage")
+    int32 ObtenerGolpes(FVector Ubicacion) const;
+
+    // Registra y elimina una instancia desde el servidor.
+    // Todavía no la estamos llamando desde el ataque.
+    UFUNCTION(BlueprintCallable, Category="Reclaim|Foliage")
+    bool RegistrarTala(
+        UHierarchicalInstancedStaticMeshComponent* Componente,
+        int32 IndiceInstancia
+    );
+
+protected:
+    virtual void BeginPlay() override;
+
+    virtual void EndPlay(
+        const EEndPlayReason::Type EndPlayReason
+    ) override;
 
 private:
-	UPROPERTY(Replicated)
-	TArray<FReclaimFoliageEstado> EstadosFoliage;
+    UPROPERTY(Replicated)
+    TArray<FReclaimFoliageEstado> EstadosFoliage;
 
-	int32 BuscarIndice(FVector Ubicacion) const;
+    UPROPERTY(ReplicatedUsing=OnRep_ArbolesTalados)
+    TArray<FReclaimFoliageTalado> ArbolesTalados;
+
+    UFUNCTION()
+    void OnRep_ArbolesTalados();
+
+    int32 BuscarIndice(FVector Ubicacion) const;
+
+    bool YaEstaTalado(
+        const FString& RutaMalla,
+        const FVector& Ubicacion
+    ) const;
+
+    void AplicarArbolesTalados();
+
+    FTimerHandle TemporizadorAplicarTalados;
 };
 

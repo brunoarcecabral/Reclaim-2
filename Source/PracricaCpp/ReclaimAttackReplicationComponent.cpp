@@ -10,7 +10,6 @@ UReclaimAttackReplicationComponent::UReclaimAttackReplicationComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
 
-    // Permite las llamadas de red del componente.
     SetIsReplicatedByDefault(true);
 }
 
@@ -33,9 +32,8 @@ void UReclaimAttackReplicationComponent::CompartirAnimacionAtaque(
     }
 }
 
-void UReclaimAttackReplicationComponent::ServidorCompartirAtaque_Implementation(
-    UAnimMontage* Montaje
-)
+void UReclaimAttackReplicationComponent::
+ServidorCompartirAtaque_Implementation(UAnimMontage* Montaje)
 {
     if (!Montaje)
     {
@@ -90,13 +88,28 @@ void UReclaimAttackReplicationComponent::SolicitarAtaqueAlServidor()
         return;
     }
 
-    // En el cliente envía la solicitud. En el servidor la ejecuta allí.
     ServidorProcesarAtaque();
 }
 
 void UReclaimAttackReplicationComponent::ServidorProcesarAtaque_Implementation()
 {
-    // Los Blueprints que escuchen este evento se ejecutarán en el servidor.
     OnAtaqueEnServidor.Broadcast();
+}
+
+void UReclaimAttackReplicationComponent::AvisarMaderaAlJugador()
+{
+    // Esta función solo debe ser llamada por el servidor.
+    if (!GetOwner() || !GetOwner()->HasAuthority())
+    {
+        return;
+    }
+
+    ClienteMostrarAvisoMadera();
+}
+
+void UReclaimAttackReplicationComponent::
+ClienteMostrarAvisoMadera_Implementation()
+{
+    OnAvisoMadera.Broadcast();
 }
 

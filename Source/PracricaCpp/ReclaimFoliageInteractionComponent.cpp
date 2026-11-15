@@ -1,6 +1,7 @@
 #include "ReclaimFoliageInteractionComponent.h"
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,8 +11,6 @@
 UReclaimFoliageInteractionComponent::UReclaimFoliageInteractionComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
-
-    // Permite que el componente utilice llamadas de red.
     SetIsReplicatedByDefault(true);
 }
 
@@ -22,8 +21,6 @@ void UReclaimFoliageInteractionComponent::SolicitarGolpeFoliage()
         return;
     }
 
-    // Si ya estamos en el servidor, se ejecuta allí.
-    // Si somos un cliente, se envía la solicitud al servidor.
     ServidorRegistrarGolpeFoliage();
 }
 
@@ -52,8 +49,6 @@ ServidorRegistrarGolpeFoliage_Implementation()
         return;
     }
 
-    
-    // inicio a 100 unidades de altura y alcance de 120.
     const FVector UbicacionPersonaje = Personaje->GetActorLocation();
 
     const FVector Inicio =
@@ -89,32 +84,23 @@ ServidorRegistrarGolpeFoliage_Implementation()
 
     if (!ComponenteFoliage)
     {
-        UE_LOG(
-            LogTemp,
-            Warning,
-            TEXT("Foliage: actor=%s | componente=%s | clase=%s"),
-            *GetNameSafe(Impacto.GetActor()),
-            *GetNameSafe(Impacto.GetComponent()),
-            *GetNameSafe(
-                Impacto.GetComponent()
-                    ? Impacto.GetComponent()->GetClass()
-                    : nullptr
-            )
-        );
-
         ClienteRecibirResultadoFoliage(false, -3);
         return;
     }
 
+    UStaticMesh* MallaGolpeada = ComponenteFoliage->GetStaticMesh();
 
+    if (!MallaGolpeada || !MallasTalables.Contains(MallaGolpeada))
+    {
+        ClienteRecibirResultadoFoliage(false, -6);
+        return;
+    }
 
     if (Impacto.Item == INDEX_NONE)
     {
         ClienteRecibirResultadoFoliage(false, -5);
         return;
     }
-
-
 
     FTransform TransformInstancia;
 
@@ -136,6 +122,37 @@ ServidorRegistrarGolpeFoliage_Implementation()
             TransformInstancia.GetLocation()
         );
 
+    if (GolpesAcumulados <= 0)
+    {
+        ClienteRecibirResultadoFoliage(false, 0);
+        return;
+    }
+
+    // A partir del cuarto golpe, el servidor intenta talar el árbol.
+    if (GolpesAcumulados >= 4)
+    {
+        const bool bTalado = Administrador->RegistrarTala(
+            ComponenteFoliage,
+            Impacto.Item
+        );
+
+        if (!bTalado)
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("Reclaim: no se pudo registrar la tala del foliage.")
+            );
+
+            ClienteRecibirResultadoFoliage(false, -7);
+            return;
+        }
+    }
+
+    // Se ejecuta en el servidor. Lo conectaremos al inventario.
+    OnGolpeFoliageValidado.Broadcast(GolpesAcumulados);
+
+    // Devuelve el resultado al jugador que golpeó.
     ClienteRecibirResultadoFoliage(true, GolpesAcumulados);
 }
 

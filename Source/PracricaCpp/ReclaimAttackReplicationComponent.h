@@ -6,8 +6,8 @@
 
 class UAnimMontage;
 
-// Se dispara en el servidor cuando llega una solicitud de ataque.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FReclaimAtaqueEnServidor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FReclaimAvisoMadera);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PRACRICACPP_API UReclaimAttackReplicationComponent
@@ -18,17 +18,26 @@ class PRACRICACPP_API UReclaimAttackReplicationComponent
 public:
 	UReclaimAttackReplicationComponent();
 
-	// Comparte con los demás la animación iniciada localmente.
 	UFUNCTION(BlueprintCallable, Category="Reclaim|Ataque")
 	void CompartirAnimacionAtaque(UAnimMontage* Montaje);
 
-	// Solicita al servidor procesar el golpe.
 	UFUNCTION(BlueprintCallable, Category="Reclaim|Ataque")
 	void SolicitarAtaqueAlServidor();
 
-	// Se ejecuta únicamente en el servidor.
+	// El servidor llama a esta función para avisar al dueño del personaje.
+	UFUNCTION(
+		BlueprintCallable,
+		BlueprintAuthorityOnly,
+		Category="Reclaim|Ataque"
+	)
+	void AvisarMaderaAlJugador();
+
 	UPROPERTY(BlueprintAssignable, Category="Reclaim|Ataque")
 	FReclaimAtaqueEnServidor OnAtaqueEnServidor;
+
+	// Este evento se dispara en la pantalla del jugador dueño.
+	UPROPERTY(BlueprintAssignable, Category="Reclaim|Ataque")
+	FReclaimAvisoMadera OnAvisoMadera;
 
 private:
 	UFUNCTION(Server, Reliable)
@@ -39,5 +48,8 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServidorProcesarAtaque();
+
+	UFUNCTION(Client, Reliable)
+	void ClienteMostrarAvisoMadera();
 };
 
