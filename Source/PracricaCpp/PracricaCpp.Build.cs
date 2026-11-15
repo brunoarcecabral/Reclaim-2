@@ -15,6 +15,7 @@ public class PracricaCpp : ModuleRules
 			"InputCore",
 			"EnhancedInput",
 			"AIModule",
+			"NavigationSystem",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
