@@ -5,7 +5,9 @@
 #include "ReclaimZonaInicioQuest.generated.h"
 
 
+class APlayerController;
 class UBoxComponent;
+class UReclaimAvisoQuestWidget;
 class UReclaimQuestData;
 
 
@@ -64,7 +66,17 @@ protected:
 private:
 
 	FTimerHandle TimerRevision;
+	
+	FTimerHandle TimerAviso;
+	
+	UPROPERTY()
+	TMap<TObjectPtr<APlayerController>, TObjectPtr<UReclaimAvisoQuestWidget>>
+		AvisosPorJugador;
 
+	void ActualizarAvisosLocales();
+
+	void QuitarAvisosLocales();
+	
 	// Se replica para abrir la barrera también en los clientes.
 	UPROPERTY(ReplicatedUsing = OnRep_EventoActivado)
 	bool bEventoActivado = false;

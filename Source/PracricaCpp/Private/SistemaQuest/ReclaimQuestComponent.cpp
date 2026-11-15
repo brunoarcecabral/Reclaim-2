@@ -1,16 +1,81 @@
 #include "SistemaQuest/ReclaimQuestComponent.h"
 
-
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/PlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "SistemaQuest/ReclaimMisionesWidget.h"
+#include "TimerManager.h"
 
 
 UReclaimQuestComponent::UReclaimQuestComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
 
-    // Replica los datos del componente junto con su actor propietario.
+    // Replica los datos junto con el actor propietario.
     SetIsReplicatedByDefault(true);
+}
+
+
+void UReclaimQuestComponent::BeginPlay()
+{
+    Super::BeginPlay();
+
+    UE_LOG(
+        LogTemp,
+        Warning,
+        TEXT("QUEST INTERFAZ: BeginPlay del componente. Actor: %s"),
+        *GetNameSafe(GetOwner())
+    );
+
+    UWorld* Mundo = GetWorld();
+
+    if (!Mundo)
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("QUEST INTERFAZ: El componente no tiene mundo.")
+        );
+
+        return;
+    }
+
+    if (Mundo->GetNetMode() == NM_DedicatedServer)
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("QUEST INTERFAZ: Servidor dedicado, no necesita interfaz.")
+        );
+
+        return;
+    }
+
+    Mundo->GetTimerManager().SetTimer(
+        TimerInterfaces,
+        this,
+        &UReclaimQuestComponent::RevisarInterfacesLocales,
+        0.5f,
+        true
+    );
+
+    RevisarInterfacesLocales();
+}
+
+
+void UReclaimQuestComponent::EndPlay(
+    const EEndPlayReason::Type EndPlayReason
+)
+{
+    if (UWorld* Mundo = GetWorld())
+    {
+        Mundo->GetTimerManager().ClearTimer(TimerInterfaces);
+    }
+
+    QuitarInterfacesLocales();
+
+    Super::EndPlay(EndPlayReason);
 }
 
 
@@ -129,7 +194,6 @@ bool UReclaimQuestComponent::AvanzarObjetivo(
             continue;
         }
 
-        // No se puede seguir avanzando una misión completada.
         if (Mision.bCompletada)
         {
             return false;
@@ -156,18 +220,19 @@ bool UReclaimQuestComponent::AvanzarObjetivo(
             return false;
         }
 
-        const int32 Requerido = DatosObjetivo->CantidadRequerida;
+        const int32 Requerido =
+            DatosObjetivo->CantidadRequerida;
 
         if (Progreso->CantidadActual >= Requerido)
         {
             return false;
         }
 
-        // Suma solamente lo que falta para completar el objetivo.
         const int32 Restante =
             Requerido - Progreso->CantidadActual;
 
-        Progreso->CantidadActual += FMath::Min(Cantidad, Restante);
+        Progreso->CantidadActual +=
+            FMath::Min(Cantidad, Restante);
 
         bool bTodosCompletados = true;
 
@@ -190,9 +255,7 @@ bool UReclaimQuestComponent::AvanzarObjetivo(
             }
         }
 
-        // La misión se completa cuando todos sus objetivos terminan.
         Mision.bCompletada = bTodosCompletados;
-
         NotificarCambio();
 
         return true;
@@ -204,19 +267,128 @@ bool UReclaimQuestComponent::AvanzarObjetivo(
 
 void UReclaimQuestComponent::OnRep_Misiones()
 {
-    // Se ejecuta en los clientes cuando reciben cambios del servidor.
+    UE_LOG(
+        LogTemp,
+        Warning,
+        TEXT("QUEST INTERFAZ: Cliente recibio %d misiones."),
+        Misiones.Num()
+    );
+
     AlCambiarMisiones.Broadcast();
 }
 
 
 void UReclaimQuestComponent::NotificarCambio()
 {
-    // Avisa también al servidor y al host.
     AlCambiarMisiones.Broadcast();
 
     if (AActor* Propietario = GetOwner())
     {
         Propietario->ForceNetUpdate();
     }
+}
+
+
+void UReclaimQuestComponent::RevisarInterfacesLocales()
+{
+    UWorld* Mundo = GetWorld();
+
+    if (!Mundo)
+    {
+        return;
+    }
+
+    TSet<APlayerController*> JugadoresLocales;
+
+    for (
+        FConstPlayerControllerIterator It =
+            Mundo->GetPlayerControllerIterator();
+        It;
+        ++It
+    )
+    {
+        APlayerController* Controlador = It->Get();
+
+        if (!IsValid(Controlador) ||
+            !Controlador->IsLocalController())
+        {
+            continue;
+        }
+
+        JugadoresLocales.Add(Controlador);
+
+        if (!InterfacesPorJugador.Contains(Controlador))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("QUEST INTERFAZ: Jugador local encontrado: %s"),
+                *GetNameSafe(Controlador)
+            );
+
+            UReclaimMisionesWidget* Interfaz =
+                CreateWidget<UReclaimMisionesWidget>(
+                    Controlador,
+                    UReclaimMisionesWidget::StaticClass()
+                );
+
+            if (!IsValid(Interfaz))
+            {
+                UE_LOG(
+                    LogTemp,
+                    Warning,
+                    TEXT("QUEST INTERFAZ: No se pudo crear el widget.")
+                );
+            }
+            else if (Interfaz->AddToPlayerScreen())
+            {
+                UE_LOG(
+                    LogTemp,
+                    Warning,
+                    TEXT("QUEST INTERFAZ: Widget agregado a la pantalla.")
+                );
+
+                InterfacesPorJugador.Add(Controlador, Interfaz);
+            }
+            else
+            {
+                UE_LOG(
+                    LogTemp,
+                    Warning,
+                    TEXT("QUEST INTERFAZ: El widget se creo, pero no se pudo agregar.")
+                );
+            }
+        }
+    }
+
+    for (auto It = InterfacesPorJugador.CreateIterator(); It; ++It)
+    {
+        APlayerController* Controlador = It.Key().Get();
+
+        if (!IsValid(Controlador) ||
+            !JugadoresLocales.Contains(Controlador))
+        {
+            if (IsValid(It.Value()))
+            {
+                It.Value()->RemoveFromParent();
+            }
+
+            It.RemoveCurrent();
+        }
+    }
+}
+
+
+void UReclaimQuestComponent::QuitarInterfacesLocales()
+{
+    for (const auto& Entrada : InterfacesPorJugador)
+    {
+        if (IsValid(Entrada.Value))
+        {
+            Entrada.Value->RemoveFromParent();
+        }
+    }
+
+    InterfacesPorJugador.Empty();
 }
 

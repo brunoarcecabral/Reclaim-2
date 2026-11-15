@@ -6,6 +6,10 @@
 #include "ReclaimQuestComponent.generated.h"
 
 
+class APlayerController;
+class UReclaimMisionesWidget;
+
+
 // Progreso de un objetivo.
 USTRUCT(BlueprintType)
 struct FProgresoObjetivoQuest
@@ -73,6 +77,12 @@ public:
 
 protected:
 
+    virtual void BeginPlay() override;
+
+    virtual void EndPlay(
+        const EEndPlayReason::Type EndPlayReason
+    ) override;
+
     UPROPERTY(ReplicatedUsing = OnRep_Misiones)
     TArray<FEstadoQuest> Misiones;
 
@@ -81,6 +91,18 @@ protected:
 
 private:
 
+    FTimerHandle TimerInterfaces;
+
+    UPROPERTY()
+    TMap<
+        TObjectPtr<APlayerController>,
+        TObjectPtr<UReclaimMisionesWidget>
+    > InterfacesPorJugador;
+
     void NotificarCambio();
+
+    void RevisarInterfacesLocales();
+
+    void QuitarInterfacesLocales();
 };
 

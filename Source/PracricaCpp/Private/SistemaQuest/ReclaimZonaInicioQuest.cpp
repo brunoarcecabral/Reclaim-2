@@ -10,6 +10,7 @@
 #include "SistemaQuest/ReclaimQuestComponent.h"
 #include "SistemaQuest/ReclaimQuestData.h"
 #include "TimerManager.h"
+#include "SistemaQuest/ReclaimAvisoQuestWidget.h"
 
 
 AReclaimZonaInicioQuest::AReclaimZonaInicioQuest()
@@ -61,7 +62,18 @@ void AReclaimZonaInicioQuest::BeginPlay()
     Super::BeginPlay();
 
     ActualizarBarrera();
-
+    // Revisa el aviso en cada instancia que tenga jugadores locales.
+    if (GetNetMode() != NM_DedicatedServer)
+    {
+        GetWorldTimerManager().SetTimer(
+            TimerAviso,
+            this,
+            &AReclaimZonaInicioQuest::ActualizarAvisosLocales,
+            0.25f,
+            true
+        );
+    }
+    
     // Solo el servidor decide cuándo comienza la misión.
     if (!HasAuthority())
     {
@@ -97,10 +109,12 @@ void AReclaimZonaInicioQuest::EndPlay(
 )
 {
     GetWorldTimerManager().ClearTimer(TimerRevision);
+    GetWorldTimerManager().ClearTimer(TimerAviso);
+
+    QuitarAvisosLocales();
 
     Super::EndPlay(EndPlayReason);
 }
-
 
 bool AReclaimZonaInicioQuest::EstanTodosEnLaZona() const
 {
@@ -159,8 +173,22 @@ void AReclaimZonaInicioQuest::RevisarJugadores()
 
     if (!EstanTodosEnLaZona())
     {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("QUEST DEBUG: Todavia no estan todos dentro de la zona.")
+        );
+
         return;
     }
+
+    UE_LOG(
+        LogTemp,
+        Warning,
+        TEXT("QUEST DEBUG: Todos estan dentro. Buscando GameState y componente.")
+    );
+
+
 
     UWorld* Mundo = GetWorld();
 
@@ -190,6 +218,13 @@ void AReclaimZonaInicioQuest::RevisarJugadores()
         GetWorldTimerManager().ClearTimer(TimerRevision);
         return;
     }
+    UE_LOG(
+        LogTemp,
+        Warning,
+        TEXT("QUEST DEBUG: Se intentara iniciar la mision %s."),
+        *MisionAIniciar->IdMision.ToString()
+    );
+
 
     if (ComponenteQuest->IniciarMision(MisionAIniciar))
     {
@@ -214,6 +249,7 @@ void AReclaimZonaInicioQuest::RevisarJugadores()
 void AReclaimZonaInicioQuest::OnRep_EventoActivado()
 {
     ActualizarBarrera();
+    ActualizarBarrera();
 }
 
 
@@ -237,4 +273,94 @@ void AReclaimZonaInicioQuest::ActualizarBarrera()
         );
     }
 }
+void AReclaimZonaInicioQuest::ActualizarAvisosLocales()
+{
+    UWorld* Mundo = GetWorld();
+
+    if (!Mundo || !IsValid(Zona))
+    {
+        return;
+    }
+
+    // Si la misión ya se activó, nadie necesita ver el aviso.
+    if (bEventoActivado)
+    {
+        QuitarAvisosLocales();
+        return;
+    }
+
+    TSet<APlayerController*> JugadoresQueEsperan;
+
+    for (
+        FConstPlayerControllerIterator It =
+            Mundo->GetPlayerControllerIterator();
+        It;
+        ++It
+    )
+    {
+        APlayerController* Controlador = It->Get();
+
+        if (!IsValid(Controlador) ||
+            !Controlador->IsLocalController())
+        {
+            continue;
+        }
+
+        const APawn* Personaje = Controlador->GetPawn();
+
+        if (!IsValid(Personaje) ||
+            !Zona->IsOverlappingActor(Personaje))
+        {
+            continue;
+        }
+
+        JugadoresQueEsperan.Add(Controlador);
+
+        if (!AvisosPorJugador.Contains(Controlador))
+        {
+            UReclaimAvisoQuestWidget* Aviso =
+                CreateWidget<UReclaimAvisoQuestWidget>(
+                    Controlador,
+                    UReclaimAvisoQuestWidget::StaticClass()
+                );
+
+            if (IsValid(Aviso) && Aviso->AddToPlayerScreen())
+            {
+                AvisosPorJugador.Add(Controlador, Aviso);
+            }
+        }
+    }
+
+    // Quita los avisos de jugadores que salieron de la zona.
+    for (auto It = AvisosPorJugador.CreateIterator(); It; ++It)
+    {
+        APlayerController* Controlador = It.Key().Get();
+
+        if (!IsValid(Controlador) ||
+            !JugadoresQueEsperan.Contains(Controlador))
+        {
+            if (IsValid(It.Value()))
+            {
+                It.Value()->RemoveFromParent();
+            }
+
+            It.RemoveCurrent();
+        }
+    }
+}
+
+
+void AReclaimZonaInicioQuest::QuitarAvisosLocales()
+{
+    for (const auto& Entrada : AvisosPorJugador)
+    {
+        if (IsValid(Entrada.Value))
+        {
+            Entrada.Value->RemoveFromParent();
+        }
+    }
+
+    AvisosPorJugador.Empty();
+}
+
 
