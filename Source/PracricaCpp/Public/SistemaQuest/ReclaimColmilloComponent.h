@@ -5,10 +5,11 @@
 #include "ReclaimColmilloComponent.generated.h"
 
 
+class APawn;
+class UActorComponent;
 class UReclaimQuestComponent;
 
 
-// Avisa a la tienda cuando debe revisar la disponibilidad.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAlCambiarColmillo);
 
 
@@ -25,17 +26,17 @@ public:
 		TArray<FLifetimeProperty>& OutLifetimeProps
 	) const override;
 
-	// El widget de la tienda podrá escuchar este evento.
 	UPROPERTY(BlueprintAssignable, Category = "Reclaim|Colmillo")
 	FAlCambiarColmillo AlCambiarColmillo;
 
-	// Verdadero cuando el objeto debe ofrecerse en la tienda.
 	UFUNCTION(BlueprintPure, Category = "Reclaim|Colmillo")
 	bool EstaDisponibleEnTienda() const;
 
-	// Indica si ya se realizó la compra compartida.
 	UFUNCTION(BlueprintPure, Category = "Reclaim|Colmillo")
 	bool YaFueComprado() const;
+
+	// Se ejecutará en el servidor después de validar la compra.
+	bool EntregarColmilloAlGrupo();
 
 protected:
 
@@ -50,7 +51,6 @@ private:
 	UPROPERTY()
 	TObjectPtr<UReclaimQuestComponent> ComponenteQuest;
 
-	// Más adelante la compra en el servidor cambiará este estado.
 	UPROPERTY(ReplicatedUsing = OnRep_ColmilloComprado)
 	bool bColmilloComprado = false;
 
@@ -59,5 +59,7 @@ private:
 
 	UFUNCTION()
 	void AlCambiarMisiones();
+
+	UActorComponent* BuscarInventario(APawn* Personaje) const;
 };
 

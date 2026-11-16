@@ -14,6 +14,8 @@
 #include "TimerManager.h"
 #include "NavigationSystem.h"
 #include "Sound/SoundBase.h"
+#include "SistemaNivel/ReclaimNivelComponent.h"
+
 
 AReclaimEnemigoBase::AReclaimEnemigoBase()
 {
@@ -413,8 +415,35 @@ float AReclaimEnemigoBase::TakeDamage(
     if (SaludActual <= 0.0f)
     {
         bMuerto = true;
+        
+        APawn* PersonajeAtacante = Cast<APawn>(DamageCauser);
+        
+        if (!IsValid(PersonajeAtacante) && IsValid(DamageCauser))
+        {
+            PersonajeAtacante = DamageCauser->GetInstigator();
+        }
+        
+        if (!IsValid(PersonajeAtacante) && IsValid(EventInstigator))
+        {
+            PersonajeAtacante = EventInstigator->GetPawn();
+        }
+
+        if (IsValid(PersonajeAtacante) &&
+            PersonajeAtacante->IsPlayerControlled())
+        {
+            UReclaimNivelComponent* ComponenteNivel =
+                PersonajeAtacante->FindComponentByClass<UReclaimNivelComponent>();
+
+            if (IsValid(ComponenteNivel))
+            {
+                ComponenteNivel->AgregarExperiencia(25);
+            }
+        }
+
         Destroy();
     }
+
+
 
     return DamageAplicado;
 }

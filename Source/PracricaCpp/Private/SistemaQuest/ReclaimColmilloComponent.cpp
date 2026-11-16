@@ -1,6 +1,12 @@
 #include "SistemaQuest/ReclaimColmilloComponent.h"
 
+#include "Components/ActorComponent.h"
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerState.h"
+#include "Inventario/ReclaimInventarioColmillo.h"
 #include "Net/UnrealNetwork.h"
 #include "SistemaQuest/ReclaimQuestComponent.h"
 #include "SistemaQuest/ReclaimQuestData.h"
@@ -25,7 +31,6 @@ void UReclaimColmilloComponent::BeginPlay()
         return;
     }
 
-    // Este componente estará en el mismo GameState que las quests.
     ComponenteQuest =
         Propietario->FindComponentByClass<UReclaimQuestComponent>();
 
@@ -34,7 +39,7 @@ void UReclaimColmilloComponent::BeginPlay()
         UE_LOG(
             LogTemp,
             Warning,
-            TEXT("COLMILLO: No se encontro ReclaimQuestComponent en el GameState.")
+            TEXT("COLMILLO: No se encontro ReclaimQuestComponent.")
         );
 
         return;
@@ -105,6 +110,174 @@ bool UReclaimColmilloComponent::EstaDisponibleEnTienda() const
 bool UReclaimColmilloComponent::YaFueComprado() const
 {
     return bColmilloComprado;
+}
+
+
+UActorComponent* UReclaimColmilloComponent::BuscarInventario(
+    APawn* Personaje
+) const
+{
+    if (!IsValid(Personaje))
+    {
+        return nullptr;
+    }
+
+    TInlineComponentArray<UActorComponent*> Componentes;
+    Personaje->GetComponents(Componentes);
+
+    for (UActorComponent* Componente : Componentes)
+    {
+        if (IsValid(Componente) &&
+            Componente->GetClass()->ImplementsInterface(
+                UReclaimInventarioColmillo::StaticClass()
+            ))
+        {
+            return Componente;
+        }
+    }
+
+    return nullptr;
+}
+
+
+bool UReclaimColmilloComponent::EntregarColmilloAlGrupo()
+{
+    AActor* Propietario = GetOwner();
+    UWorld* Mundo = GetWorld();
+
+    if (!IsValid(Propietario) ||
+        !Propietario->HasAuthority() ||
+        !Mundo ||
+        !EstaDisponibleEnTienda())
+    {
+        return false;
+    }
+
+    TArray<UActorComponent*> Inventarios;
+
+    // Primero comprobamos todos los inventarios.
+    for (
+        FConstPlayerControllerIterator It =
+            Mundo->GetPlayerControllerIterator();
+        It;
+        ++It
+    )
+    {
+        APlayerController* Controlador = It->Get();
+
+        if (!IsValid(Controlador))
+        {
+            continue;
+        }
+
+        const APlayerState* EstadoJugador =
+            Controlador->GetPlayerState<APlayerState>();
+
+        if (EstadoJugador && EstadoJugador->IsOnlyASpectator())
+        {
+            continue;
+        }
+
+        APawn* Personaje = Controlador->GetPawn();
+        UActorComponent* Inventario = BuscarInventario(Personaje);
+
+        if (!IsValid(Inventario) ||
+            !IReclaimInventarioColmillo::Execute_PuedeRecibirColmillo(
+                Inventario
+            ))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("COLMILLO: Un jugador no puede recibir el objeto.")
+            );
+
+            return false;
+        }
+
+        Inventarios.Add(Inventario);
+    }
+
+    if (Inventarios.IsEmpty())
+    {
+        return false;
+    }
+
+    TArray<UActorComponent*> InventariosEntregados;
+
+    // Agregamos una unidad a cada inventario.
+    for (UActorComponent* Inventario : Inventarios)
+    {
+        const bool bAgregado =
+            IReclaimInventarioColmillo::Execute_AgregarColmillo(
+                Inventario
+            );
+
+        if (!bAgregado)
+        {
+            // Si falla, intentamos deshacer las entregas anteriores.
+            for (UActorComponent* Anterior : InventariosEntregados)
+            {
+                const bool bRevertido =
+                    IReclaimInventarioColmillo::Execute_QuitarColmillo(
+                        Anterior
+                    );
+
+                if (!bRevertido)
+                {
+                    UE_LOG(
+                        LogTemp,
+                        Error,
+                        TEXT("COLMILLO: No se pudo revertir una entrega.")
+                    );
+                }
+            }
+
+            return false;
+        }
+
+        InventariosEntregados.Add(Inventario);
+    }
+
+    // La misión se completa cuando el grupo recibe el objeto.
+    if (!ComponenteQuest->AvanzarObjetivo(
+        FName(TEXT("BuscarHabilidad")),
+        FName(TEXT("ConseguirHabilidad")),
+        1
+    ))
+    {
+        for (UActorComponent* Inventario : InventariosEntregados)
+        {
+            const bool bRevertido =
+                IReclaimInventarioColmillo::Execute_QuitarColmillo(
+                    Inventario
+                );
+
+            if (!bRevertido)
+            {
+                UE_LOG(
+                    LogTemp,
+                    Error,
+                    TEXT("COLMILLO: No se pudo revertir una entrega.")
+                );
+            }
+        }
+
+        return false;
+    }
+
+    bColmilloComprado = true;
+
+    AlCambiarColmillo.Broadcast();
+    Propietario->ForceNetUpdate();
+
+    UE_LOG(
+        LogTemp,
+        Log,
+        TEXT("COLMILLO: Objeto entregado al grupo.")
+    );
+
+    return true;
 }
 
 
