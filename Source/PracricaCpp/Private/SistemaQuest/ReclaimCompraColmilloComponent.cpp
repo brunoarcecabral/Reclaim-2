@@ -3,61 +3,120 @@
 #include "Engine/World.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/Pawn.h"
+#include "SistemaNivel/ReclaimNivelComponent.h"
 #include "SistemaQuest/ReclaimColmilloComponent.h"
 
 
 UReclaimCompraColmilloComponent::UReclaimCompraColmilloComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+    PrimaryComponentTick.bCanEverTick = false;
 
-	SetIsReplicatedByDefault(true);
+    SetIsReplicatedByDefault(true);
 }
 
 
 void UReclaimCompraColmilloComponent::SolicitarDesbloqueo()
 {
-	APawn* Personaje = Cast<APawn>(GetOwner());
+    APawn* Personaje = Cast<APawn>(GetOwner());
 
-	if (!IsValid(Personaje) || !Personaje->IsLocallyControlled())
-	{
-		return;
-	}
+    if (!IsValid(Personaje) || !Personaje->IsLocallyControlled())
+    {
+        return;
+    }
 
-	ServidorSolicitarDesbloqueo();
+    ServidorSolicitarDesbloqueo();
 }
 
 
 void UReclaimCompraColmilloComponent::ServidorSolicitarDesbloqueo_Implementation()
 {
-	bool bExito = false;
+    APawn* Personaje = Cast<APawn>(GetOwner());
 
-	UWorld* Mundo = GetWorld();
+    if (!IsValid(Personaje) || !Personaje->IsPlayerControlled())
+    {
+        ClienteRecibirResultado(false, false);
+        return;
+    }
 
-	if (Mundo)
-	{
-		AGameStateBase* EstadoJuego = Mundo->GetGameState();
+    UReclaimNivelComponent* ComponenteNivel =
+        Personaje->FindComponentByClass<UReclaimNivelComponent>();
 
-		if (IsValid(EstadoJuego))
-		{
-			UReclaimColmilloComponent* ComponenteColmillo =
-				EstadoJuego->FindComponentByClass<UReclaimColmilloComponent>();
+    if (!IsValid(ComponenteNivel))
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("COLMILLO: El comprador no tiene componente de nivel.")
+        );
 
-			if (IsValid(ComponenteColmillo))
-			{
-				// Pendiente: validar aquí el nivel 2 del comprador.
-				bExito = ComponenteColmillo->EntregarColmilloAlGrupo();
-			}
-		}
-	}
+        ClienteRecibirResultado(false, false);
+        return;
+    }
 
-	ClienteRecibirResultado(bExito);
+    if (ComponenteNivel->ObtenerNivel() < 2)
+    {
+        UWorld* Mundo = GetWorld();
+
+        if (Mundo)
+        {
+            AGameStateBase* EstadoJuego = Mundo->GetGameState();
+
+            if (IsValid(EstadoJuego))
+            {
+                UReclaimColmilloComponent* ComponenteColmillo =
+                    EstadoJuego->FindComponentByClass<UReclaimColmilloComponent>();
+
+                if (IsValid(ComponenteColmillo))
+                {
+                    ComponenteColmillo->IniciarMisionNivel();
+                }
+            }
+        }
+
+        ClienteRecibirResultado(false, true);
+        return;
+    }
+
+    UWorld* Mundo = GetWorld();
+
+    if (!Mundo)
+    {
+        ClienteRecibirResultado(false, false);
+        return;
+    }
+
+    AGameStateBase* EstadoJuego = Mundo->GetGameState();
+
+    if (!IsValid(EstadoJuego))
+    {
+        ClienteRecibirResultado(false, false);
+        return;
+    }
+
+    UReclaimColmilloComponent* ComponenteColmillo =
+        EstadoJuego->FindComponentByClass<UReclaimColmilloComponent>();
+
+    if (!IsValid(ComponenteColmillo))
+    {
+        ClienteRecibirResultado(false, false);
+        return;
+    }
+
+    const bool bExito =
+        ComponenteColmillo->EntregarColmilloAlGrupo();
+
+    ClienteRecibirResultado(bExito, false);
 }
 
 
 void UReclaimCompraColmilloComponent::ClienteRecibirResultado_Implementation(
-	bool bExito
+    bool bExito,
+    bool bNivelInsuficiente
 )
 {
-	AlRecibirResultado.Broadcast(bExito);
+    AlRecibirResultado.Broadcast(
+        bExito,
+        bNivelInsuficiente
+    );
 }
 

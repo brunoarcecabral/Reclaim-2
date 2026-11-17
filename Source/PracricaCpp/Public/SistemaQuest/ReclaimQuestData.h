@@ -13,7 +13,8 @@ enum class ETipoObjetivoQuest : uint8
 	LeerNota UMETA(DisplayName = "Leer una nota"),
 	Recolectar UMETA(DisplayName = "Recolectar"),
 	Interactuar UMETA(DisplayName = "Interactuar"),
-	EliminarEnemigo UMETA(DisplayName = "Eliminar enemigo")
+	EliminarEnemigo UMETA(DisplayName = "Eliminar enemigo"),
+	AlcanzarNivel UMETA(DisplayName = "Alcanzar nivel")
 };
 
 
@@ -23,11 +24,9 @@ struct FObjetivoQuest
 {
 	GENERATED_BODY()
 
-	// Identificador único dentro de la misión.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objetivo")
 	FName IdObjetivo = NAME_None;
 
-	// Texto que verá el jugador.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objetivo")
 	FText Descripcion;
 
@@ -52,7 +51,6 @@ class PRACRICACPP_API UReclaimQuestData : public UPrimaryDataAsset
 
 public:
 
-	// Identificador único de la misión.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mision")
 	FName IdMision = NAME_None;
 

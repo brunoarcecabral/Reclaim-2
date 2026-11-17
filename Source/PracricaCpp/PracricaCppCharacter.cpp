@@ -1,254 +1,349 @@
-// Este include SIEMPRE tiene que ser el primero en Unreal
+// Este include debe ser el primero.
 #include "PracricaCppCharacter.h"
+
 #include "ShopActor.h"
 
-// Recien despues vienen los demas includes
-#include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "GameFramework/Controller.h"
+#include "Components/InputComponent.h"
+#include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Habilidades/ReclaimHabilidadWallRunComponent.h"
 #include "InputActionValue.h"
+#include "InputCoreTypes.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "PracricaCpp.h"
 
 
 APracricaCppCharacter::APracricaCppCharacter()
 {
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
-	// Don't rotate when the controller rotates. Let that just affect the camera.
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
+    // Tamaño de la cápsula de colisión.
+    GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+    // La cámara puede rotar sin rotar directamente al personaje.
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw = false;
+    bUseControllerRotationRoll = false;
 
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 500.f;
-	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+    // Configuración de movimiento.
+    GetCharacterMovement()->bOrientRotationToMovement = true;
+    GetCharacterMovement()->RotationRate =
+        FRotator(0.0f, 500.0f, 0.0f);
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;
-	CameraBoom->bUsePawnControlRotation = true;
+    GetCharacterMovement()->JumpZVelocity = 500.f;
+    GetCharacterMovement()->AirControl = 0.35f;
+    GetCharacterMovement()->MaxWalkSpeed = 500.f;
+    GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
+    GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+    GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
+    // Brazo de cámara.
+    CameraBoom =
+        CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-	
+    CameraBoom->SetupAttachment(RootComponent);
+    CameraBoom->TargetArmLength = 400.0f;
+    CameraBoom->bUsePawnControlRotation = true;
 
+    // Cámara.
+    FollowCamera =
+        CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+
+    FollowCamera->SetupAttachment(
+        CameraBoom,
+        USpringArmComponent::SocketName
+    );
+
+    FollowCamera->bUsePawnControlRotation = false;
 }
 
-void APracricaCppCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+
+void APracricaCppCharacter::SetupPlayerInputComponent(
+    UInputComponent* PlayerInputComponent
+)
 {
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+    // Tecla 1 de la fila superior del teclado.
+    PlayerInputComponent->BindKey(
+        EKeys::One,
+        IE_Pressed,
+        this,
+        &APracricaCppCharacter::ActivarHabilidadWallRun
+    );
 
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APracricaCppCharacter::Move);
-		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &APracricaCppCharacter::Look);
+    if (UEnhancedInputComponent* EnhancedInputComponent =
+        Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    {
+        // Salto.
+        EnhancedInputComponent->BindAction(
+            JumpAction,
+            ETriggerEvent::Started,
+            this,
+            &ACharacter::Jump
+        );
 
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APracricaCppCharacter::Look);
-		
-		// Interaccion (se llama Interact() cuando se presiona la tecla)
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &APracricaCppCharacter::Interact);
-	}
-	else
-	{
-		UE_LOG(LogPracricaCpp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
+        EnhancedInputComponent->BindAction(
+            JumpAction,
+            ETriggerEvent::Completed,
+            this,
+            &ACharacter::StopJumping
+        );
+
+        // Movimiento.
+        EnhancedInputComponent->BindAction(
+            MoveAction,
+            ETriggerEvent::Triggered,
+            this,
+            &APracricaCppCharacter::Move
+        );
+
+        EnhancedInputComponent->BindAction(
+            MouseLookAction,
+            ETriggerEvent::Triggered,
+            this,
+            &APracricaCppCharacter::Look
+        );
+
+        // Cámara.
+        EnhancedInputComponent->BindAction(
+            LookAction,
+            ETriggerEvent::Triggered,
+            this,
+            &APracricaCppCharacter::Look
+        );
+
+        // Interacción.
+        EnhancedInputComponent->BindAction(
+            InteractAction,
+            ETriggerEvent::Started,
+            this,
+            &APracricaCppCharacter::Interact
+        );
+    }
+    else
+    {
+        UE_LOG(
+            LogPracricaCpp,
+            Error,
+            TEXT("'%s' Failed to find an Enhanced Input component! "
+                 "This template is built to use the Enhanced Input system. "
+                 "If you intend to use the legacy system, then you will need "
+                 "to update this C++ file."),
+            *GetNameSafe(this)
+        );
+    }
 }
+
 
 void APracricaCppCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+    const FVector2D MovementVector = Value.Get<FVector2D>();
 
-	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
+    DoMove(MovementVector.X, MovementVector.Y);
 }
+
 
 void APracricaCppCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+    const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	// route the input
-	DoLook(LookAxisVector.X, LookAxisVector.Y);
+    DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
+
 
 void APracricaCppCharacter::DoMove(float Right, float Forward)
 {
-	if (GetController() != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = GetController()->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+    if (GetController() != nullptr)
+    {
+        const FRotator Rotation = GetController()->GetControlRotation();
+        const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+        const FVector ForwardDirection =
+            FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+        const FVector RightDirection =
+            FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// add movement 
-		AddMovementInput(ForwardDirection, Forward);
-		AddMovementInput(RightDirection, Right);
-	}
+        AddMovementInput(ForwardDirection, Forward);
+        AddMovementInput(RightDirection, Right);
+    }
 }
+
 
 void APracricaCppCharacter::DoLook(float Yaw, float Pitch)
 {
-	if (GetController() != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
-	}
+    if (GetController() != nullptr)
+    {
+        AddControllerYawInput(Yaw);
+        AddControllerPitchInput(Pitch);
+    }
 }
+
 
 void APracricaCppCharacter::DoJumpStart()
 {
-	// signal the character to jump
-	Jump();
+    Jump();
 }
+
 
 void APracricaCppCharacter::DoJumpEnd()
 {
-	// signal the character to stop jumping
-	StopJumping();
+    StopJumping();
+}
+
+
+void APracricaCppCharacter::ActivarHabilidadWallRun()
+{
+    UReclaimHabilidadWallRunComponent* Habilidad =
+        FindComponentByClass<UReclaimHabilidadWallRunComponent>();
+
+    if (IsValid(Habilidad))
+    {
+        Habilidad->SolicitarActivarWallRun();
+    }
 }
 
 
 void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
 {
-	// 1. Sumamos la experiencia obtenida a la actual
-	CExperienciaActual += CExpObtenida;
+    CExperienciaActual += CExpObtenida;
 
-	// Usamos una variable temporal para saber si tenemos que tirar el mensaje de victoria
-	bool bSubioDeNivel = false;
+    bool bSubioDeNivel = false;
 
-	// 2. Evaluamos si alcanza para subir de nivel (El while nos protege por si gana mucha exp de golpe)
-	while (CExperienciaActual >= CExperienciaRequerida)
-	{
-		bSubioDeNivel = true;
+    while (CExperienciaActual >= CExperienciaRequerida)
+    {
+        bSubioDeNivel = true;
 
-		// Aumentamos el nivel
-		CNivelActual++; 
+        CNivelActual++;
 
-		// Restamos la experiencia que "costó" subir de nivel
-		CExperienciaActual -= CExperienciaRequerida;
+        CExperienciaActual -= CExperienciaRequerida;
 
-		// Aumentamos la exp requerida en un 10% (agregamos la 'f' al final de 10.0 para que Unreal sepa que es float)
-		CExperienciaRequerida += (CExperienciaRequerida / 10.0f);
-	}
+        CExperienciaRequerida +=
+            (CExperienciaRequerida / 10.0f);
+    }
 
-	// 3. Los Print Strings
-	if (bSubioDeNivel)
-	{
-		// Armamos el super mensaje de victoria
-		// Ojo: Usamos (int32) delante de CNivelActual para esconderle los decimales en el texto.
-		// Además, le sumo 1 al segundo CNivelActual para que te muestre correctamente cuál es tu PRÓXIMO nivel.
-		FString MensajeVictoria = FString::Printf(TEXT("FELICIDADES\nSubiste al nivel:\n%d\nProximo Nivel: %d\n(Requiere %.1f EXP)\nEXP Actual: %.1f"), 
-			(int32)CNivelActual, (int32)CNivelActual + 1, CExperienciaRequerida, CExperienciaActual);
+    if (bSubioDeNivel)
+    {
+        const FString MensajeVictoria = FString::Printf(
+            TEXT("FELICIDADES\n")
+            TEXT("Subiste al nivel:\n%d\n")
+            TEXT("Proximo Nivel: %d\n")
+            TEXT("(Requiere %.1f EXP)\n")
+            TEXT("EXP Actual: %.1f"),
+            static_cast<int32>(CNivelActual),
+            static_cast<int32>(CNivelActual) + 1,
+            CExperienciaRequerida,
+            CExperienciaActual
+        );
 
-		if (GEngine)
-		{
-			// FColor::Cyan es ese turquesa que tenías, dura 10 segundos
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Magenta, MensajeVictoria);
-		}
-	}
-	else
-	{
-		// Armamos el mensaje corto de cuando no alcanza para subir
-		FString MensajeCorto = FString::Printf(TEXT("Experiencia Actual:\n%.1f"), CExperienciaActual);
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                10.0f,
+                FColor::Magenta,
+                MensajeVictoria
+            );
+        }
+    }
+    else
+    {
+        const FString MensajeCorto = FString::Printf(
+            TEXT("Experiencia Actual:\n%.1f"),
+            CExperienciaActual
+        );
 
-		if (GEngine)
-		{
-			// Dura 2 segundos
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, MensajeCorto);
-		}
-	}
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                2.0f,
+                FColor::Cyan,
+                MensajeCorto
+            );
+        }
+    }
 }
+
+
 void APracricaCppCharacter::Interact()
 {
-	// El rayo sale a la altura de la cámara/personaje y sigue la dirección de la cámara.
-	FVector Start = GetActorLocation() + FVector(0.f, 0.f, 60.f);
-	FVector End = Start + (GetControlRotation().Vector() * 300.f);
+    const FVector Start =
+        GetActorLocation() + FVector(0.f, 0.f, 60.f);
 
-	FHitResult HitResult;
-	TArray<AActor*> ActorsToIgnore;
+    const FVector End =
+        Start + (GetControlRotation().Vector() * 300.f);
 
-	UKismetSystemLibrary::LineTraceSingle(
-		this,
-		Start,
-		End,
-		ETraceTypeQuery::TraceTypeQuery1,
-		true,
-		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
-		HitResult,
-		true
-	);
+    FHitResult HitResult;
+    TArray<AActor*> ActorsToIgnore;
 
-	if (AActor* HitActor = HitResult.GetActor())
-	{
-		if (AShopActor* Shop = Cast<AShopActor>(HitActor))
-		{
-			Shop->Interact();
-			return;
-		}
+    UKismetSystemLibrary::LineTraceSingle(
+        this,
+        Start,
+        End,
+        ETraceTypeQuery::TraceTypeQuery1,
+        true,
+        ActorsToIgnore,
+        EDrawDebugTrace::ForDuration,
+        HitResult,
+        true
+    );
 
-		if (HitActor->GetClass()->ImplementsInterface(UComunicacionPuzzle::StaticClass()))
-		{
-			IComunicacionPuzzle::Execute_ComunicarPuzzle(HitActor, TengoLaLlave);
-			return;
-		}
-	}
+    if (AActor* HitActor = HitResult.GetActor())
+    {
+        if (AShopActor* Shop = Cast<AShopActor>(HitActor))
+        {
+            Shop->Interact();
+            return;
+        }
 
-	// Mensaje temporal para comprobar que E funciona aunque no golpee una tienda.
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			1.f,
-			FColor::Red,
-			TEXT("No hay nada interactuable frente a ti."));
-	}
+        if (HitActor->GetClass()->ImplementsInterface(
+            UComunicacionPuzzle::StaticClass()))
+        {
+            IComunicacionPuzzle::Execute_ComunicarPuzzle(
+                HitActor,
+                TengoLaLlave
+            );
+
+            return;
+        }
+    }
+
+    // Mensaje temporal existente para la interacción.
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(
+            -1,
+            1.f,
+            FColor::Red,
+            TEXT("No hay nada interactuable frente a ti.")
+        );
+    }
 }
 
-	
+
 void APracricaCppCharacter::ComunicarPuzzle_Implementation(bool llave)
 {
-	TengoLaLlave = llave;
-}	
-void APracricaCppCharacter::InformacionColor_Implementation(const FString& Color, bool ColorActivado)
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, Color);
-	}
-	
+    TengoLaLlave = llave;
 }
+
+
+void APracricaCppCharacter::InformacionColor_Implementation(
+    const FString& Color,
+    bool ColorActivado
+)
+{
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(
+            -1,
+            10.f,
+            FColor::Cyan,
+            Color
+        );
+    }
+}
+

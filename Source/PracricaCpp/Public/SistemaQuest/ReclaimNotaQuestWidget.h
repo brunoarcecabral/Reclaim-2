@@ -9,7 +9,6 @@ class UReclaimNotaQuestData;
 class UTextBlock;
 
 
-// Se dispara localmente cuando el jugador pulsa E.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAlContinuarNota);
 
 
@@ -22,10 +21,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Quest")
 	FAlContinuarNota AlContinuarNota;
-
-	// Carga el título y el contenido de una nota.
-	UFUNCTION(BlueprintCallable, Category = "Quest")
+	
 	void MostrarNota(UReclaimNotaQuestData* DatosNota);
+	
+	void UsarEscapeParaContinuar();
+	
+	void UsarCierreAutomatico();
 
 protected:
 
@@ -43,5 +44,10 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UTextBlock> TextoContenido;
+
+	UPROPERTY()
+	TObjectPtr<UTextBlock> TextoContinuar;
+
+	bool bContinuarConEscape = false;
 };
 

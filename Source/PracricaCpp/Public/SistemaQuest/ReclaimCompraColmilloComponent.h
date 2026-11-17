@@ -5,11 +5,12 @@
 #include "ReclaimCompraColmilloComponent.generated.h"
 
 
-// Se ejecuta en el jugador que solicitó el desbloqueo.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FResultadoCompraColmillo,
 	bool,
-	bExito
+	bExito,
+	bool,
+	bNivelInsuficiente
 );
 
 
@@ -22,11 +23,10 @@ public:
 
 	UReclaimCompraColmilloComponent();
 
-	// La tienda escuchará este evento para mostrar el resultado.
+	// El jugador que solicitó el colmillo recibe el resultado.
 	UPROPERTY(BlueprintAssignable, Category = "Reclaim|Colmillo")
 	FResultadoCompraColmillo AlRecibirResultado;
 
-	// Se llama desde la tienda del jugador local.
 	UFUNCTION(BlueprintCallable, Category = "Reclaim|Colmillo")
 	void SolicitarDesbloqueo();
 
@@ -36,6 +36,9 @@ private:
 	void ServidorSolicitarDesbloqueo();
 
 	UFUNCTION(Client, Reliable)
-	void ClienteRecibirResultado(bool bExito);
+	void ClienteRecibirResultado(
+		bool bExito,
+		bool bNivelInsuficiente
+	);
 };
 

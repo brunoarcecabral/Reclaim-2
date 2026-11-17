@@ -436,7 +436,7 @@ float AReclaimEnemigoBase::TakeDamage(
 
             if (IsValid(ComponenteNivel))
             {
-                ComponenteNivel->AgregarExperiencia(25);
+                ComponenteNivel->AgregarExperiencia(15);
             }
         }
 

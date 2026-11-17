@@ -17,7 +17,6 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
-    // Permite que el widget reciba la tecla E cuando tenga el foco.
     SetIsFocusable(true);
 
     if (!WidgetTree)
@@ -38,7 +37,6 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
 
     WidgetTree->RootWidget = Panel;
 
-    // Fondo semitransparente de la ventana.
     UBorder* Fondo =
         WidgetTree->ConstructWidget<UBorder>(
             UBorder::StaticClass(),
@@ -61,7 +59,6 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
 
     if (Espacio)
     {
-        // Centro de la pantalla.
         Espacio->SetAnchors(FAnchors(0.5f, 0.5f));
         Espacio->SetAlignment(FVector2D(0.5f, 0.5f));
         Espacio->SetPosition(FVector2D::ZeroVector);
@@ -137,7 +134,7 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
         }
     }
 
-    UTextBlock* TextoContinuar =
+    TextoContinuar =
         WidgetTree->ConstructWidget<UTextBlock>(
             UTextBlock::StaticClass(),
             TEXT("TextoContinuar")
@@ -145,6 +142,7 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
 
     if (TextoContinuar)
     {
+        // Las notas normales siguen usando E.
         TextoContinuar->SetText(
             FText::FromString(TEXT("Pulsa E para continuar"))
         );
@@ -162,9 +160,7 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
 
         if (EspacioContinuar)
         {
-            EspacioContinuar->SetHorizontalAlignment(
-                HAlign_Center
-            );
+            EspacioContinuar->SetHorizontalAlignment(HAlign_Center);
 
             EspacioContinuar->SetPadding(
                 FMargin(0.0f, 20.0f, 0.0f, 0.0f)
@@ -195,12 +191,31 @@ void UReclaimNotaQuestWidget::MostrarNota(
 }
 
 
+void UReclaimNotaQuestWidget::UsarEscapeParaContinuar()
+{
+    bContinuarConEscape = true;
+
+    if (IsValid(TextoContinuar))
+    {
+        TextoContinuar->SetText(
+            FText::FromString(TEXT("Pulsa Esc para continuar"))
+        );
+    }
+}
+
+
 FReply UReclaimNotaQuestWidget::NativeOnKeyDown(
     const FGeometry& InGeometry,
     const FKeyEvent& InKeyEvent
 )
 {
-    if (InKeyEvent.GetKey() == EKeys::E)
+    const FKey Tecla = InKeyEvent.GetKey();
+
+    const bool bTeclaCorrecta =
+        (bContinuarConEscape && Tecla == EKeys::Escape) ||
+        (!bContinuarConEscape && Tecla == EKeys::E);
+
+    if (bTeclaCorrecta)
     {
         AlContinuarNota.Broadcast();
         return FReply::Handled();
@@ -208,4 +223,18 @@ FReply UReclaimNotaQuestWidget::NativeOnKeyDown(
 
     return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
+void UReclaimNotaQuestWidget::UsarCierreAutomatico()
+{
+    bContinuarConEscape = true;
+
+    if (IsValid(TextoContinuar))
+    {
+        TextoContinuar->SetText(
+            FText::FromString(
+                TEXT("Esta ventana se cerrara automaticamente")
+            )
+        );
+    }
+}
+
 

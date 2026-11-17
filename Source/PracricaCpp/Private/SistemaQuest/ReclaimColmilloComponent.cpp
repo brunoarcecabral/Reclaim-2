@@ -8,8 +8,11 @@
 #include "GameFramework/PlayerState.h"
 #include "Inventario/ReclaimInventarioColmillo.h"
 #include "Net/UnrealNetwork.h"
+#include "SistemaNivel/ReclaimNivelComponent.h"
+#include "SistemaNivel/ReclaimTutorialNivelComponent.h"
 #include "SistemaQuest/ReclaimQuestComponent.h"
 #include "SistemaQuest/ReclaimQuestData.h"
+#include "TimerManager.h"
 
 
 UReclaimColmilloComponent::UReclaimColmilloComponent()
@@ -49,6 +52,20 @@ void UReclaimColmilloComponent::BeginPlay()
         this,
         &UReclaimColmilloComponent::AlCambiarMisiones
     );
+
+    if (Propietario->HasAuthority())
+    {
+        if (UWorld* Mundo = GetWorld())
+        {
+            Mundo->GetTimerManager().SetTimer(
+                TimerRevisionNivel,
+                this,
+                &UReclaimColmilloComponent::RevisarNivelDelGrupo,
+                0.5f,
+                true
+            );
+        }
+    }
 }
 
 
@@ -56,6 +73,11 @@ void UReclaimColmilloComponent::EndPlay(
     const EEndPlayReason::Type EndPlayReason
 )
 {
+    if (UWorld* Mundo = GetWorld())
+    {
+        Mundo->GetTimerManager().ClearTimer(TimerRevisionNivel);
+    }
+
     if (IsValid(ComponenteQuest))
     {
         ComponenteQuest->AlCambiarMisiones.RemoveDynamic(
@@ -95,9 +117,16 @@ bool UReclaimColmilloComponent::EstaDisponibleEnTienda() const
 
     for (const FEstadoQuest& Estado : Misiones)
     {
-        if (IsValid(Estado.DatosMision) &&
-            Estado.DatosMision->IdMision == FName(TEXT("BuscarHabilidad")) &&
-            !Estado.bCompletada)
+        if (!IsValid(Estado.DatosMision) || Estado.bCompletada)
+        {
+            continue;
+        }
+
+        const FName IdMision = Estado.DatosMision->IdMision;
+
+        if (IdMision == FName(TEXT("BuscarHabilidad")) ||
+            IdMision == FName(TEXT("SubirNivelDos")) ||
+            IdMision == FName(TEXT("ObtenerHabilidadTienda")))
         {
             return true;
         }
@@ -110,6 +139,233 @@ bool UReclaimColmilloComponent::EstaDisponibleEnTienda() const
 bool UReclaimColmilloComponent::YaFueComprado() const
 {
     return bColmilloComprado;
+}
+
+
+bool UReclaimColmilloComponent::IniciarMisionNivel()
+{
+    AActor* Propietario = GetOwner();
+
+    if (!IsValid(Propietario) ||
+        !Propietario->HasAuthority() ||
+        bColmilloComprado ||
+        !IsValid(ComponenteQuest) ||
+        !IsValid(MisionSubirNivel))
+    {
+        return false;
+    }
+
+    if (MisionSubirNivel->IdMision != FName(TEXT("SubirNivelDos")))
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("COLMILLO: El Data Asset de subir nivel tiene un ID incorrecto.")
+        );
+
+        return false;
+    }
+
+    const TArray<FEstadoQuest> Misiones =
+        ComponenteQuest->ObtenerMisiones();
+
+    bool bMisionBusquedaActiva = false;
+
+    for (const FEstadoQuest& Estado : Misiones)
+    {
+        if (!IsValid(Estado.DatosMision))
+        {
+            continue;
+        }
+
+        if (Estado.DatosMision->IdMision == FName(TEXT("SubirNivelDos")))
+        {
+            return !Estado.bCompletada;
+        }
+
+        if (Estado.DatosMision->IdMision == FName(TEXT("BuscarHabilidad")) &&
+            !Estado.bCompletada)
+        {
+            bMisionBusquedaActiva = true;
+        }
+    }
+
+    if (!bMisionBusquedaActiva)
+    {
+        return false;
+    }
+
+    if (!ComponenteQuest->IniciarMision(MisionSubirNivel))
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("COLMILLO: No se pudo iniciar la mision de subir nivel.")
+        );
+
+        return false;
+    }
+
+    if (!ComponenteQuest->AvanzarObjetivo(
+        FName(TEXT("BuscarHabilidad")),
+        FName(TEXT("ConseguirHabilidad")),
+        1
+    ))
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("COLMILLO: Se inicio la mision de nivel, pero no se pudo completar la busqueda.")
+        );
+
+        return false;
+    }
+    
+    UReclaimTutorialNivelComponent* Tutorial =
+        Propietario->FindComponentByClass<UReclaimTutorialNivelComponent>();
+
+    if (IsValid(Tutorial))
+    {
+        const bool bAbierto = Tutorial->AbrirTutorial();
+
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("TUTORIAL NIVEL: Solicitud de apertura: %s"),
+            bAbierto ? TEXT("ACEPTADA") : TEXT("RECHAZADA")
+        );
+    }
+    else
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("TUTORIAL NIVEL: No se encontro el componente de tutorial en el GameState.")
+        );
+    }
+
+    UE_LOG(
+        LogTemp,
+        Log,
+        TEXT("COLMILLO: Mision de subir a nivel 2 iniciada.")
+    );
+
+    return true;
+}
+
+
+void UReclaimColmilloComponent::RevisarNivelDelGrupo()
+{
+    AActor* Propietario = GetOwner();
+    UWorld* Mundo = GetWorld();
+
+    if (!IsValid(Propietario) ||
+        !Propietario->HasAuthority() ||
+        !Mundo ||
+        !IsValid(ComponenteQuest) ||
+        !IsValid(MisionObtenerHabilidad))
+    {
+        return;
+    }
+
+    if (MisionObtenerHabilidad->IdMision !=
+        FName(TEXT("ObtenerHabilidadTienda")))
+    {
+        return;
+    }
+
+    const TArray<FEstadoQuest> Misiones =
+        ComponenteQuest->ObtenerMisiones();
+
+    bool bMisionNivelActiva = false;
+
+    for (const FEstadoQuest& Estado : Misiones)
+    {
+        if (IsValid(Estado.DatosMision) &&
+            Estado.DatosMision->IdMision == FName(TEXT("SubirNivelDos")) &&
+            !Estado.bCompletada)
+        {
+            bMisionNivelActiva = true;
+            break;
+        }
+    }
+
+    if (!bMisionNivelActiva)
+    {
+        return;
+    }
+
+    bool bAlguienAlcanzoNivelDos = false;
+
+    for (
+        FConstPlayerControllerIterator It =
+            Mundo->GetPlayerControllerIterator();
+        It;
+        ++It
+    )
+    {
+        const APlayerController* Controlador = It->Get();
+
+        if (!IsValid(Controlador))
+        {
+            continue;
+        }
+
+        const APlayerState* EstadoJugador =
+            Controlador->GetPlayerState<APlayerState>();
+
+        if (EstadoJugador && EstadoJugador->IsOnlyASpectator())
+        {
+            continue;
+        }
+
+        APawn* Personaje = Controlador->GetPawn();
+
+        if (!IsValid(Personaje))
+        {
+            continue;
+        }
+
+        UReclaimNivelComponent* Nivel =
+            Personaje->FindComponentByClass<UReclaimNivelComponent>();
+
+        if (IsValid(Nivel) && Nivel->ObtenerNivel() >= 2)
+        {
+            bAlguienAlcanzoNivelDos = true;
+            break;
+        }
+    }
+
+    if (!bAlguienAlcanzoNivelDos)
+    {
+        return;
+    }
+
+    if (!ComponenteQuest->IniciarMision(MisionObtenerHabilidad))
+    {
+        return;
+    }
+
+    if (!ComponenteQuest->AvanzarObjetivo(
+        FName(TEXT("SubirNivelDos")),
+        FName(TEXT("AlcanzarNivelDos")),
+        1
+    ))
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("COLMILLO: Se inicio la mision de tienda, pero no se pudo completar la de nivel.")
+        );
+
+        return;
+    }
+
+    UE_LOG(
+        LogTemp,
+        Log,
+        TEXT("COLMILLO: Un jugador alcanzo el nivel 2.")
+    );
 }
 
 
@@ -153,9 +409,42 @@ bool UReclaimColmilloComponent::EntregarColmilloAlGrupo()
         return false;
     }
 
-    TArray<UActorComponent*> Inventarios;
+    FName IdMisionCompra = NAME_None;
+    FName IdObjetivoCompra = NAME_None;
 
-    // Primero comprobamos todos los inventarios.
+    const TArray<FEstadoQuest> Misiones =
+        ComponenteQuest->ObtenerMisiones();
+
+    for (const FEstadoQuest& Estado : Misiones)
+    {
+        if (!IsValid(Estado.DatosMision) || Estado.bCompletada)
+        {
+            continue;
+        }
+
+        if (Estado.DatosMision->IdMision == FName(TEXT("BuscarHabilidad")))
+        {
+            IdMisionCompra = FName(TEXT("BuscarHabilidad"));
+            IdObjetivoCompra = FName(TEXT("ConseguirHabilidad"));
+            break;
+        }
+
+        if (Estado.DatosMision->IdMision ==
+            FName(TEXT("ObtenerHabilidadTienda")))
+        {
+            IdMisionCompra = FName(TEXT("ObtenerHabilidadTienda"));
+            IdObjetivoCompra = FName(TEXT("DesbloquearColmillo"));
+            break;
+        }
+    }
+
+    if (IdMisionCompra.IsNone() || IdObjetivoCompra.IsNone())
+    {
+        return false;
+    }
+
+    TArray<UActorComponent*> Inventarios;
+    
     for (
         FConstPlayerControllerIterator It =
             Mundo->GetPlayerControllerIterator();
@@ -204,8 +493,7 @@ bool UReclaimColmilloComponent::EntregarColmilloAlGrupo()
     }
 
     TArray<UActorComponent*> InventariosEntregados;
-
-    // Agregamos una unidad a cada inventario.
+    
     for (UActorComponent* Inventario : Inventarios)
     {
         const bool bAgregado =
@@ -215,7 +503,6 @@ bool UReclaimColmilloComponent::EntregarColmilloAlGrupo()
 
         if (!bAgregado)
         {
-            // Si falla, intentamos deshacer las entregas anteriores.
             for (UActorComponent* Anterior : InventariosEntregados)
             {
                 const bool bRevertido =
@@ -238,11 +525,10 @@ bool UReclaimColmilloComponent::EntregarColmilloAlGrupo()
 
         InventariosEntregados.Add(Inventario);
     }
-
-    // La misión se completa cuando el grupo recibe el objeto.
+    
     if (!ComponenteQuest->AvanzarObjetivo(
-        FName(TEXT("BuscarHabilidad")),
-        FName(TEXT("ConseguirHabilidad")),
+        IdMisionCompra,
+        IdObjetivoCompra,
         1
     ))
     {
@@ -267,6 +553,14 @@ bool UReclaimColmilloComponent::EntregarColmilloAlGrupo()
     }
 
     bColmilloComprado = true;
+    
+    UReclaimTutorialNivelComponent* Tutorial =
+        Propietario->FindComponentByClass<UReclaimTutorialNivelComponent>();
+
+    if (IsValid(Tutorial))
+    {
+        Tutorial->AbrirTutorialWallRun();
+    }
 
     AlCambiarColmillo.Broadcast();
     Propietario->ForceNetUpdate();
@@ -291,4 +585,3 @@ void UReclaimColmilloComponent::AlCambiarMisiones()
 {
     AlCambiarColmillo.Broadcast();
 }
-

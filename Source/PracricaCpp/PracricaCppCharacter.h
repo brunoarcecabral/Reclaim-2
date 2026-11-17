@@ -21,10 +21,10 @@ class APracricaCppCharacter : public ACharacter, public IComunicacionPuzzle, pub
 {
     GENERATED_BODY()
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess="true"))
     USpringArmComponent* CameraBoom;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess="true"))
     UCameraComponent* FollowCamera;
 
 protected:
@@ -45,17 +45,23 @@ protected:
     UInputAction* InteractAction;
 
 public:
+
     APracricaCppCharacter();
 
 protected:
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
+    virtual void SetupPlayerInputComponent(
+        class UInputComponent* PlayerInputComponent
+    ) override;
+
     void Move(const FInputActionValue& Value);
     void Look(const FInputActionValue& Value);
     void Interact();
 
+    void ActivarHabilidadWallRun();
+
 public:
+
     UFUNCTION(BlueprintCallable, Category="Input")
     virtual void DoMove(float Right, float Forward);
 
@@ -68,24 +74,36 @@ public:
     UFUNCTION(BlueprintCallable, Category="Input")
     virtual void DoJumpEnd();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Progresion")
     float CExperienciaActual = 0.0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Progresion")
     float CExperienciaRequerida = 40.0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progresion")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Progresion")
     float CNivelActual = 1;
 
-    UFUNCTION(BlueprintCallable, Category = "Progresion")
+    UFUNCTION(BlueprintCallable, Category="Progresion")
     void CGanarExperiencia(float CExpObtenida);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Puzzle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Puzzle")
     bool TengoLaLlave = false;
 
     virtual void ComunicarPuzzle_Implementation(bool llave) override;
-    virtual void InformacionColor_Implementation(const FString& Color, bool ColorActivado) override;
 
-    FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-    FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+    virtual void InformacionColor_Implementation(
+        const FString& Color,
+        bool ColorActivado
+    ) override;
+
+    FORCEINLINE USpringArmComponent* GetCameraBoom() const
+    {
+        return CameraBoom;
+    }
+
+    FORCEINLINE UCameraComponent* GetFollowCamera() const
+    {
+        return FollowCamera;
+    }
 };
+
