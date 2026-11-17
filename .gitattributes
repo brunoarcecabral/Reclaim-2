@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+Content/AsphaltMat/Textures/*.uasset filter=lfs diff=lfs merge=lfs -text
+Content/AsphaltMat/*/.uasset filter=lfs diff=lfs merge=lfs -text
