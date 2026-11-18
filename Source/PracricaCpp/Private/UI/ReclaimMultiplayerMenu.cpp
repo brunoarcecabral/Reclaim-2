@@ -2,6 +2,7 @@
 
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
+#include "Components/ButtonSlot.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/EditableTextBox.h"
@@ -13,9 +14,9 @@
 #include "Components/VerticalBoxSlot.h"
 #include "Engine/GameInstance.h"
 #include "Engine/Texture2D.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "OnlineSessionSettings.h"
-#include "Components/ButtonSlot.h"
 
 #include "ReclaimSessionSubsystem.h"
 
@@ -54,7 +55,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         ImagenFondo->SetBrushFromTexture(TexturaFondo);
     }
 
-    // La imagen es decorativa: no debe bloquear los clics.
+    // La imagen es decorativa y no bloquea los clics.
     ImagenFondo->SetVisibility(ESlateVisibility::HitTestInvisible);
 
     UCanvasPanelSlot* SlotFondo =
@@ -110,14 +111,14 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         Fuente.Size = 18;
         Texto->SetFont(Fuente);
 
-        UButtonSlot* SlotTexto = Cast<UButtonSlot>(Boton->AddChild(Texto));
+        UButtonSlot* SlotTexto =
+            Cast<UButtonSlot>(Boton->AddChild(Texto));
 
         if (SlotTexto)
         {
             SlotTexto->SetHorizontalAlignment(HAlign_Center);
             SlotTexto->SetVerticalAlignment(VAlign_Center);
         }
-
 
         Caja->AddChild(Boton);
 
@@ -129,6 +130,14 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         return Boton;
     };
 
+    // Abre el mapa directamente, sin crear una sesión.
+    BotonJugarSolo = CrearBoton(
+        TEXT("BotonJugarSolo"),
+        TEXT("TextoJugarSolo"),
+        TEXT("Jugar solo")
+    );
+
+    // Mantiene el comportamiento multijugador existente.
     BotonCrearPartida = CrearBoton(
         TEXT("BotonCrearPartida"),
         TEXT("TextoCrear"),
@@ -202,7 +211,6 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
     EstiloEntrada.SetBackgroundColor(FSlateColor(FLinearColor::White));
     EntradaNumeroPartida->SetWidgetStyle(EstiloEntrada);
 
-
     CajaEntrada->AddChild(EntradaNumeroPartida);
 
     UVerticalBoxSlot* SlotEntrada =
@@ -220,6 +228,11 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         TEXT("BotonSalir"),
         TEXT("TextoSalir"),
         TEXT("Salir")
+    );
+
+    BotonJugarSolo->OnClicked.AddUniqueDynamic(
+        this,
+        &UReclaimMultiplayerMenu::JugarSolo
     );
 
     BotonCrearPartida->OnClicked.AddUniqueDynamic(
@@ -290,6 +303,14 @@ void UReclaimMultiplayerMenu::NativeDestruct()
     }
 
     Super::NativeDestruct();
+}
+
+void UReclaimMultiplayerMenu::JugarSolo()
+{
+    UGameplayStatics::OpenLevel(
+        this,
+        FName(TEXT("/Game/ThirdPerson/Lvl_ThirdPerson"))
+    );
 }
 
 void UReclaimMultiplayerMenu::CrearPartida()

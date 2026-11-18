@@ -20,6 +20,10 @@ protected:
 	virtual void NativeDestruct() override;
 
 private:
+	
+	UPROPERTY()
+	TObjectPtr<UButton> BotonJugarSolo;
+	
 	UPROPERTY()
 	TObjectPtr<UButton> BotonCrearPartida;
 
@@ -43,7 +47,10 @@ private:
 
 	UPROPERTY()
 	TArray<FBlueprintSessionResult> PartidasEncontradas;
-
+	
+	UFUNCTION()
+	void JugarSolo();
+	
 	UFUNCTION()
 	void CrearPartida();
 
