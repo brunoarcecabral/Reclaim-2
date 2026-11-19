@@ -119,9 +119,7 @@ void UReclaimPausaComponent::AbrirMenuPausa()
     &UReclaimPausaComponent::GuardarPartida
 );
 
-    NuevoMenu->HabilitarGuardado(
-        Mundo->GetNetMode() == NM_Standalone
-    );
+    NuevoMenu->HabilitarGuardado(true);
     
     if (!NuevoMenu->AddToPlayerScreen(200))
     {
@@ -232,7 +230,25 @@ void UReclaimPausaComponent::GuardarPartida()
     {
         return;
     }
+    
+    UWorld* Mundo = GetWorld();
 
+    if (!Mundo)
+    {
+        return;
+    }
+
+    if (Mundo->GetNetMode() != NM_Standalone)
+    {
+        MenuPausa->MostrarEstadoGuardado(
+            FText::FromString(
+                TEXT("Esta opcion no esta disponible en multijugador.")
+            )
+        );
+
+        return;
+    }
+    
     AActor* Personaje = GetOwner();
 
     UReclaimGuardadoJugadorComponent* GuardadoJugador =

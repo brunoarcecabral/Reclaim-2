@@ -67,6 +67,7 @@ bool UReclaimGuardadoSubsystem::PrepararPartidaGuardada()
 	}
 
 	DatosPendientes = Guardado;
+	bOmitirAvisoInicial = true;
 	return true;
 }
 
@@ -80,4 +81,17 @@ void UReclaimGuardadoSubsystem::LimpiarDatosPendientes()
 {
 	DatosPendientes = nullptr;
 }
+bool UReclaimGuardadoSubsystem::ConsumirOmisionAvisoInicial()
+{
+	const bool bDebeOmitir = bOmitirAvisoInicial;
+	bOmitirAvisoInicial = false;
+
+	return bDebeOmitir;
+}
+
+void UReclaimGuardadoSubsystem::LimpiarOmisionAvisoInicial()
+{
+	bOmitirAvisoInicial = false;
+}
+
 

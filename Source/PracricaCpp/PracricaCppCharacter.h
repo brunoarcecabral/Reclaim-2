@@ -62,6 +62,9 @@ protected:
 
 public:
 
+    UFUNCTION(BlueprintPure, Category = "Reclaim|Multijugador")
+    bool EsPartidaMultijugador() const;
+
     UFUNCTION(BlueprintCallable, Category="Input")
     virtual void DoMove(float Right, float Forward);
 

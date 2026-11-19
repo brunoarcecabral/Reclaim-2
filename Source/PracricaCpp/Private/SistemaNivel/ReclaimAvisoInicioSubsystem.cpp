@@ -5,6 +5,8 @@
 #include "SistemaQuest/ReclaimNotaQuestData.h"
 #include "SistemaQuest/ReclaimNotaQuestWidget.h"
 #include "TimerManager.h"
+#include "Engine/GameInstance.h"
+#include "SistemaGuardado/ReclaimGuardadoSubsystem.h"
 
 
 void UReclaimAvisoInicioSubsystem::Deinitialize()
@@ -41,7 +43,20 @@ void UReclaimAvisoInicioSubsystem::ProgramarAviso(
     {
         return;
     }
+    UGameInstance* Instancia = Controlador->GetGameInstance();
 
+    if (IsValid(Instancia))
+    {
+        UReclaimGuardadoSubsystem* SistemaGuardado =
+            Instancia->GetSubsystem<UReclaimGuardadoSubsystem>();
+
+        if (IsValid(SistemaGuardado) &&
+            SistemaGuardado->ConsumirOmisionAvisoInicial())
+        {
+            return;
+        }
+    }
+    
     ControladorAviso = Controlador;
     bAvisoProgramado = true;
 

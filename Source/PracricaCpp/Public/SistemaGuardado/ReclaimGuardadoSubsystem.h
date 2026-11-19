@@ -25,10 +25,16 @@ public:
 	UReclaimSaveGame* ObtenerDatosPendientes() const;
 	
 	void LimpiarDatosPendientes();
+	
+	bool ConsumirOmisionAvisoInicial();
+	void LimpiarOmisionAvisoInicial();
 
 private:
 
 	UPROPERTY()
 	TObjectPtr<UReclaimSaveGame> DatosPendientes;
+	
+	bool bOmitirAvisoInicial = false;
+
 };
 

@@ -16,6 +16,7 @@
 #include "SistemaQuest/ReclaimZonaInicioQuest.h"
 #include "SistemaQuest/ReclaimZonaObjetivoQuest.h"
 #include "SistemaQuest/ReclaimZonaCampamento.h"
+#include "SistemaGuardado/ReclaimFogataGuardadoComponent.h"
 
 
 UReclaimGuardadoJugadorComponent::UReclaimGuardadoJugadorComponent()
@@ -255,6 +256,44 @@ bool UReclaimGuardadoJugadorComponent::GuardarJugador()
         if (Zona->EstaAbiertaParaGuardado())
         {
             Datos->ZonasCampamentoAbiertas.Add(Zona->IdGuardado);
+        }
+    }
+    TSet<FName> IdsFogatas;
+
+    for (TActorIterator<AActor> It(Mundo); It; ++It)
+    {
+        AActor* Actor = *It;
+
+        if (!IsValid(Actor))
+        {
+            continue;
+        }
+
+        UReclaimFogataGuardadoComponent* Fogata =
+            Actor->FindComponentByClass<UReclaimFogataGuardadoComponent>();
+
+        if (!IsValid(Fogata))
+        {
+            continue;
+        }
+
+        if (Fogata->IdGuardado.IsNone() ||
+            IdsFogatas.Contains(Fogata->IdGuardado))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("GUARDADO: fogata sin ID o con ID repetido.")
+            );
+
+            return false;
+        }
+
+        IdsFogatas.Add(Fogata->IdGuardado);
+
+        if (Fogata->EstaActivada())
+        {
+            Datos->FogatasActivadas.Add(Fogata->IdGuardado);
         }
     }
     
@@ -548,6 +587,75 @@ void UReclaimGuardadoJugadorComponent::AplicarGuardadoPendiente()
                 Warning,
                 TEXT("GUARDADO: no se pudo restaurar la nota %s."),
                 *IdNota.ToString()
+            );
+
+            return;
+        }
+    }
+    TMap<FName, UReclaimFogataGuardadoComponent*> FogatasPorId;
+
+    for (TActorIterator<AActor> It(Mundo); It; ++It)
+    {
+        AActor* Actor = *It;
+
+        if (!IsValid(Actor))
+        {
+            continue;
+        }
+
+        UReclaimFogataGuardadoComponent* Fogata =
+            Actor->FindComponentByClass<UReclaimFogataGuardadoComponent>();
+
+        if (!IsValid(Fogata))
+        {
+            continue;
+        }
+
+        if (Fogata->IdGuardado.IsNone() ||
+            FogatasPorId.Contains(Fogata->IdGuardado))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("CARGA: fogata sin ID o con ID repetido.")
+            );
+
+            return;
+        }
+
+        FogatasPorId.Add(Fogata->IdGuardado, Fogata);
+    }
+
+    for (const FName& IdFogata : Datos->FogatasActivadas)
+    {
+        UReclaimFogataGuardadoComponent* Fogata =
+            FogatasPorId.FindRef(IdFogata);
+
+        if (!IsValid(Fogata))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("CARGA: no se encontro la fogata %s."),
+                *IdFogata.ToString()
+            );
+
+            return;
+        }
+    }
+
+    for (const FName& IdFogata : Datos->FogatasActivadas)
+    {
+        UReclaimFogataGuardadoComponent* Fogata =
+            FogatasPorId.FindRef(IdFogata);
+
+        if (!Fogata->RestaurarActivada())
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("CARGA: no se pudo restaurar la fogata %s."),
+                *IdFogata.ToString()
             );
 
             return;

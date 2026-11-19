@@ -18,6 +18,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "PracricaCpp.h"
 #include "UI/ReclaimPausaComponent.h"
+#include "Engine/World.h"
 
 
 APracricaCppCharacter::APracricaCppCharacter()
@@ -356,5 +357,11 @@ void APracricaCppCharacter::InformacionColor_Implementation(
             Color
         );
     }
+}
+bool APracricaCppCharacter::EsPartidaMultijugador() const
+{
+    const UWorld* Mundo = GetWorld();
+
+    return Mundo && Mundo->GetNetMode() != NM_Standalone;
 }
 

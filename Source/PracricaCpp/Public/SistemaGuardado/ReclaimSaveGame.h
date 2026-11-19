@@ -108,4 +108,7 @@ public:
 	UPROPERTY()
 	TArray<FName> ZonasCampamentoAbiertas;
 	
+	UPROPERTY()
+	TArray<FName> FogatasActivadas;
+	
 };

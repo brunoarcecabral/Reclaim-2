@@ -358,6 +358,7 @@ void UReclaimMultiplayerMenu::JugarSolo()
             Instancia->GetSubsystem<UReclaimGuardadoSubsystem>())
         {
             SistemaGuardado->LimpiarDatosPendientes();
+            SistemaGuardado->LimpiarOmisionAvisoInicial();
         }
     }
 
