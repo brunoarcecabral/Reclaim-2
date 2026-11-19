@@ -42,7 +42,10 @@ public:
     {
         return DatosNota.Get();
     }
-
+    UReclaimNotaQuestData* ObtenerNotaAdicionalFinalizada() const
+    {
+        return bNotaFinalizada ? NotaAdicionalAlFinalizar.Get() : nullptr;
+    }
 
 protected:
 
@@ -60,6 +63,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nota")
     TObjectPtr<UReclaimNotaQuestData> DatosNota;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nota")
+    TObjectPtr<UReclaimNotaQuestData> NotaAdicionalAlFinalizar;
     
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nota")
     bool bPermitirMisionCompletada = false;
