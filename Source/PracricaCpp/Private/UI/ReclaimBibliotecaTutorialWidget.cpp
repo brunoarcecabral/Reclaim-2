@@ -19,8 +19,7 @@
 void UReclaimBibliotecaTutorialWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
-
-    // Permite que la ventana reciba la tecla T.
+    
     SetIsFocusable(true);
 
     if (!WidgetTree)
@@ -40,8 +39,7 @@ void UReclaimBibliotecaTutorialWidget::NativeOnInitialized()
     }
 
     WidgetTree->RootWidget = Panel;
-
-    // Fondo semitransparente de la ventana.
+    
     UBorder* Fondo =
         WidgetTree->ConstructWidget<UBorder>(
             UBorder::StaticClass(),
@@ -67,8 +65,7 @@ void UReclaimBibliotecaTutorialWidget::NativeOnInitialized()
         Espacio->SetAnchors(FAnchors(0.5f, 0.5f));
         Espacio->SetAlignment(FVector2D(0.5f, 0.5f));
         Espacio->SetPosition(FVector2D::ZeroVector);
-
-        // Más grande que la ventana de las notas.
+        
         Espacio->SetSize(FVector2D(900.0f, 650.0f));
     }
 
@@ -221,7 +218,6 @@ FReply UReclaimBibliotecaTutorialWidget::NativeOnPreviewKeyDown(
 {
     if (InKeyEvent.GetKey() == EKeys::T)
     {
-        // Evita repetir el cierre si se mantiene la tecla apretada.
         if (!InKeyEvent.IsRepeat())
         {
             AlCerrarBiblioteca.Broadcast();

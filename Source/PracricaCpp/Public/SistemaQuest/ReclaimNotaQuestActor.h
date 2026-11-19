@@ -25,12 +25,24 @@ public:
     virtual void GetLifetimeReplicatedProps(
         TArray<FLifetimeProperty>& OutLifetimeProps
     ) const override;
-
-    // El servidor comprueba si el personaje puede continuar.
+    
     bool PuedeContinuar(const APawn* Personaje) const;
-
-    // El servidor completa la lectura e inicia la misión siguiente.
+    
     bool FinalizarLectura();
+    
+    bool EstaFinalizada() const;
+    bool RestaurarComoFinalizada();
+    
+    bool FueDescubierta() const
+    {
+        return bNotaAbierta || bNotaFinalizada;
+    }
+
+    UReclaimNotaQuestData* ObtenerDatosNota() const
+    {
+        return DatosNota.Get();
+    }
+
 
 protected:
 
@@ -39,12 +51,10 @@ protected:
     virtual void EndPlay(
         const EEndPlayReason::Type EndPlayReason
     ) override;
-
-    // Área que activa la nota cuando entra cualquier jugador.
+    
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Nota")
     TObjectPtr<UBoxComponent> ZonaReunion;
-
-    // Malla visual de la nota, configurable en el editor.
+    
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Nota")
     TObjectPtr<UStaticMeshComponent> MallaNota;
 
@@ -72,8 +82,7 @@ private:
 
     FTimerHandle TimerRevision;
     FTimerHandle TimerInterfaz;
-
-    // Una ventana por jugador local.
+    
     UPROPERTY()
     TMap<
         TObjectPtr<APlayerController>,

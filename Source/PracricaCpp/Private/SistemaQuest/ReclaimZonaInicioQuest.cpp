@@ -16,8 +16,7 @@
 AReclaimZonaInicioQuest::AReclaimZonaInicioQuest()
 {
     PrimaryActorTick.bCanEverTick = false;
-
-    // Necesario para comunicar la apertura de la barrera.
+    
     bReplicates = true;
 
     Zona = CreateDefaultSubobject<UBoxComponent>(TEXT("Zona"));
@@ -32,8 +31,7 @@ AReclaimZonaInicioQuest::AReclaimZonaInicioQuest()
 
     Barrera = CreateDefaultSubobject<UBoxComponent>(TEXT("Barrera"));
     Barrera->SetupAttachment(Zona);
-
-    // Tamaño inicial. Lo ajustaremos en el Blueprint.
+    
     Barrera->SetBoxExtent(FVector(30.0f, 300.0f, 200.0f));
 
     Barrera->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -62,7 +60,7 @@ void AReclaimZonaInicioQuest::BeginPlay()
     Super::BeginPlay();
 
     ActualizarBarrera();
-    // Revisa el aviso en cada instancia que tenga jugadores locales.
+    
     if (GetNetMode() != NM_DedicatedServer)
     {
         GetWorldTimerManager().SetTimer(
@@ -74,7 +72,6 @@ void AReclaimZonaInicioQuest::BeginPlay()
         );
     }
     
-    // Solo el servidor decide cuándo comienza la misión.
     if (!HasAuthority())
     {
         return;
@@ -229,8 +226,7 @@ void AReclaimZonaInicioQuest::RevisarJugadores()
     if (ComponenteQuest->IniciarMision(MisionAIniciar))
     {
         bEventoActivado = true;
-
-        // La replicación actualiza a los clientes; esto actualiza al servidor.
+        
         ActualizarBarrera();
 
         ForceNetUpdate();
@@ -281,8 +277,7 @@ void AReclaimZonaInicioQuest::ActualizarAvisosLocales()
     {
         return;
     }
-
-    // Si la misión ya se activó, nadie necesita ver el aviso.
+    
     if (bEventoActivado)
     {
         QuitarAvisosLocales();
@@ -330,8 +325,7 @@ void AReclaimZonaInicioQuest::ActualizarAvisosLocales()
             }
         }
     }
-
-    // Quita los avisos de jugadores que salieron de la zona.
+    
     for (auto It = AvisosPorJugador.CreateIterator(); It; ++It)
     {
         APlayerController* Controlador = It.Key().Get();
@@ -361,6 +355,28 @@ void AReclaimZonaInicioQuest::QuitarAvisosLocales()
     }
 
     AvisosPorJugador.Empty();
+}
+bool AReclaimZonaInicioQuest::EstaActivadaParaGuardado() const
+{
+    return bEventoActivado;
+}
+
+bool AReclaimZonaInicioQuest::RestaurarActivada()
+{
+    if (!HasAuthority())
+    {
+        return false;
+    }
+
+    bEventoActivado = true;
+
+    ActualizarBarrera();
+    ActualizarAvisosLocales();
+
+    GetWorldTimerManager().ClearTimer(TimerRevision);
+    ForceNetUpdate();
+
+    return true;
 }
 
 

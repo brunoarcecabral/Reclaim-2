@@ -25,6 +25,9 @@ private:
 	TObjectPtr<UButton> BotonJugarSolo;
 	
 	UPROPERTY()
+	TObjectPtr<UButton> BotonContinuarPartida;
+	
+	UPROPERTY()
 	TObjectPtr<UButton> BotonCrearPartida;
 
 	UPROPERTY()
@@ -50,6 +53,9 @@ private:
 	
 	UFUNCTION()
 	void JugarSolo();
+	
+	UFUNCTION()
+	void ContinuarPartida();
 	
 	UFUNCTION()
 	void CrearPartida();

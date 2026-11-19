@@ -16,6 +16,12 @@ class PRACRICACPP_API AReclaimZonaObjetivoQuest : public AActor
 public:
 
 	AReclaimZonaObjetivoQuest();
+	
+	UPROPERTY(EditInstanceOnly, Category = "Reclaim|Guardado")
+	FName IdGuardado = NAME_None;
+
+	bool EstaActivadaParaGuardado() const;
+	bool RestaurarActivada();
 
 protected:
 
@@ -24,8 +30,7 @@ protected:
 	virtual void EndPlay(
 		const EEndPlayReason::Type EndPlayReason
 	) override;
-
-	// Área que detecta a cualquier jugador.
+	
 	UPROPERTY(
 		VisibleAnywhere,
 		BlueprintReadOnly,

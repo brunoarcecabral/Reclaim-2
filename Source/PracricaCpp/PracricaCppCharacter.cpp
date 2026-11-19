@@ -17,6 +17,7 @@
 #include "InputCoreTypes.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "PracricaCpp.h"
+#include "UI/ReclaimPausaComponent.h"
 
 
 APracricaCppCharacter::APracricaCppCharacter()
@@ -66,7 +67,17 @@ void APracricaCppCharacter::SetupPlayerInputComponent(
     UInputComponent* PlayerInputComponent
 )
 {
-    // Tecla 1 de la fila superior del teclado.
+    if (UReclaimPausaComponent* ComponentePausa =
+    FindComponentByClass<UReclaimPausaComponent>())
+    {
+        PlayerInputComponent->BindKey(
+            EKeys::Escape,
+            IE_Pressed,
+            ComponentePausa,
+            &UReclaimPausaComponent::AbrirMenuPausa
+        );
+    }
+    
     PlayerInputComponent->BindKey(
         EKeys::One,
         IE_Pressed,

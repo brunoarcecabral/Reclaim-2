@@ -49,8 +49,7 @@ AReclaimNotaQuestActor::AReclaimNotaQuestActor()
         );
 
     MallaNota->SetupAttachment(ZonaReunion);
-
-    // La malla es visual y no bloquea al jugador.
+    
     MallaNota->SetCollisionEnabled(
         ECollisionEnabled::NoCollision
     );
@@ -71,8 +70,7 @@ void AReclaimNotaQuestActor::GetLifetimeReplicatedProps(
 void AReclaimNotaQuestActor::BeginPlay()
 {
     Super::BeginPlay();
-
-    // Cada instancia con jugadores locales administra su ventana.
+    
     if (GetNetMode() != NM_DedicatedServer)
     {
         GetWorldTimerManager().SetTimer(
@@ -83,8 +81,7 @@ void AReclaimNotaQuestActor::BeginPlay()
             true
         );
     }
-
-    // Solo el servidor decide cuándo se abre la nota.
+    
     if (!HasAuthority())
     {
         return;
@@ -215,8 +212,7 @@ void AReclaimNotaQuestActor::RevisarZona()
         {
             continue;
         }
-
-        // Sin un objetivo de llegada, basta con que la misión esté activa.
+        
         if (DatosNota->IdObjetivoLlegada.IsNone())
         {
             bPuedeAbrirNota = true;
@@ -265,11 +261,30 @@ void AReclaimNotaQuestActor::RevisarZona()
         TEXT("NOTA QUEST: Nota abierta: %s"),
         *DatosNota->IdNota.ToString()
     );
-
-    // También actualiza la pantalla local del host.
+    
     ActualizarVentanasLocales();
 }
+bool AReclaimNotaQuestActor::EstaFinalizada() const
+{
+    return bNotaFinalizada;
+}
 
+bool AReclaimNotaQuestActor::RestaurarComoFinalizada()
+{
+    if (!HasAuthority() || !IsValid(DatosNota))
+    {
+        return false;
+    }
+
+    bNotaAbierta = false;
+    bNotaFinalizada = true;
+    
+    GetWorldTimerManager().ClearTimer(TimerRevision);
+
+    ForceNetUpdate();
+
+    return true;
+}
 
 bool AReclaimNotaQuestActor::PuedeContinuar(
     const APawn* Personaje
@@ -282,8 +297,7 @@ bool AReclaimNotaQuestActor::PuedeContinuar(
     {
         return false;
     }
-
-    // Acepta a cualquier personaje controlado por un jugador.
+    
     return IsValid(
         Cast<APlayerController>(Personaje->GetController())
     );
@@ -322,8 +336,7 @@ bool AReclaimNotaQuestActor::FinalizarLectura()
     {
         return false;
     }
-
-    // Se completa el objetivo cuando un jugador pulsa E.
+    
     const bool bLecturaCompletada =
         ComponenteQuest->AvanzarObjetivo(
             DatosNota->IdMisionActual,
@@ -341,8 +354,7 @@ bool AReclaimNotaQuestActor::FinalizarLectura()
 
         return false;
     }
-
-    // La misión siguiente es opcional.
+    
     if (IsValid(DatosNota->MisionSiguiente))
     {
         if (!ComponenteQuest->IniciarMision(DatosNota->MisionSiguiente))
@@ -359,8 +371,7 @@ bool AReclaimNotaQuestActor::FinalizarLectura()
     bNotaFinalizada = true;
 
     ForceNetUpdate();
-
-    // También cierra la ventana local del host.
+    
     ActualizarVentanasLocales();
 
     UE_LOG(
@@ -456,9 +467,8 @@ void AReclaimNotaQuestActor::ActualizarVentanasLocales()
         }
 
         VentanasPorJugador.Add(Controlador, Ventana);
-
-        // El widget recibe el teclado para detectar la tecla E.
-        FInputModeGameAndUI ModoEntrada;
+        
+        FInputModeUIOnly ModoEntrada;
         ModoEntrada.SetWidgetToFocus(Ventana->TakeWidget());
 
         Controlador->SetInputMode(ModoEntrada);

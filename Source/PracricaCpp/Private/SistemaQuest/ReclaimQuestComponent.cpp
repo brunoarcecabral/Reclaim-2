@@ -6,13 +6,13 @@
 #include "Net/UnrealNetwork.h"
 #include "SistemaQuest/ReclaimMisionesWidget.h"
 #include "TimerManager.h"
+#include "SistemaGuardado/ReclaimSaveGame.h"
 
 
 UReclaimQuestComponent::UReclaimQuestComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
 
-    // Replica los datos junto con el actor propietario.
     SetIsReplicatedByDefault(true);
 }
 
@@ -93,7 +93,168 @@ TArray<FEstadoQuest> UReclaimQuestComponent::ObtenerMisiones() const
 {
     return Misiones;
 }
+bool UReclaimQuestComponent::CopiarMisionesAlGuardado(
+    UReclaimSaveGame* DatosGuardado
+) const
+{
+    if (!IsValid(DatosGuardado))
+    {
+        return false;
+    }
 
+    TArray<FReclaimMisionGuardada> MisionesGuardadas;
+
+    for (const FEstadoQuest& Mision : Misiones)
+    {
+        if (!IsValid(Mision.DatosMision))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("GUARDADO: una mision no tiene datos validos.")
+            );
+
+            return false;
+        }
+
+        FReclaimMisionGuardada MisionGuardada;
+        MisionGuardada.DatosMision = Mision.DatosMision;
+        MisionGuardada.bCompletada = Mision.bCompletada;
+
+        for (const FProgresoObjetivoQuest& Progreso :
+             Mision.ProgresoObjetivos)
+        {
+            FReclaimObjetivoGuardado ObjetivoGuardado;
+            ObjetivoGuardado.IdObjetivo = Progreso.IdObjetivo;
+            ObjetivoGuardado.CantidadActual = Progreso.CantidadActual;
+
+            MisionGuardada.Objetivos.Add(ObjetivoGuardado);
+        }
+
+        MisionesGuardadas.Add(MisionGuardada);
+    }
+
+    DatosGuardado->Misiones = MoveTemp(MisionesGuardadas);
+    return true;
+}
+
+bool UReclaimQuestComponent::RestaurarMisionesDesdeGuardado(
+    const UReclaimSaveGame* DatosGuardado
+)
+{
+    if (!GetOwner() ||
+        !GetOwner()->HasAuthority() ||
+        !IsValid(DatosGuardado))
+    {
+        return false;
+    }
+
+    TArray<FEstadoQuest> MisionesRestauradas;
+    TSet<FName> IdsMisiones;
+
+    for (const FReclaimMisionGuardada& MisionGuardada :
+         DatosGuardado->Misiones)
+    {
+        UReclaimQuestData* DatosMision =
+            MisionGuardada.DatosMision.LoadSynchronous();
+
+        if (!IsValid(DatosMision) ||
+            DatosMision->IdMision.IsNone() ||
+            IdsMisiones.Contains(DatosMision->IdMision) ||
+            DatosMision->Objetivos.IsEmpty())
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("GUARDADO: datos de mision invalidos o repetidos.")
+            );
+
+            return false;
+        }
+
+        IdsMisiones.Add(DatosMision->IdMision);
+
+        FEstadoQuest MisionRestaurada;
+        MisionRestaurada.DatosMision = DatosMision;
+
+        TSet<FName> IdsObjetivos;
+        bool bTodosCompletados = true;
+
+        for (const FObjetivoQuest& Objetivo : DatosMision->Objetivos)
+        {
+            if (Objetivo.IdObjetivo.IsNone() ||
+                Objetivo.CantidadRequerida < 1 ||
+                IdsObjetivos.Contains(Objetivo.IdObjetivo))
+            {
+                return false;
+            }
+
+            IdsObjetivos.Add(Objetivo.IdObjetivo);
+
+            const FReclaimObjetivoGuardado* ProgresoGuardado =
+                MisionGuardada.Objetivos.FindByPredicate(
+                    [&Objetivo](const FReclaimObjetivoGuardado& Progreso)
+                    {
+                        return Progreso.IdObjetivo == Objetivo.IdObjetivo;
+                    }
+                );
+
+            if (!ProgresoGuardado ||
+                ProgresoGuardado->CantidadActual < 0 ||
+                ProgresoGuardado->CantidadActual >
+                    Objetivo.CantidadRequerida)
+            {
+                UE_LOG(
+                    LogTemp,
+                    Warning,
+                    TEXT("GUARDADO: progreso de objetivo invalido.")
+                );
+
+                return false;
+            }
+
+            FProgresoObjetivoQuest ProgresoRestaurado;
+            ProgresoRestaurado.IdObjetivo = Objetivo.IdObjetivo;
+            ProgresoRestaurado.CantidadActual =
+                ProgresoGuardado->CantidadActual;
+
+            MisionRestaurada.ProgresoObjetivos.Add(
+                ProgresoRestaurado
+            );
+
+            if (ProgresoGuardado->CantidadActual <
+                Objetivo.CantidadRequerida)
+            {
+                bTodosCompletados = false;
+            }
+        }
+        
+        if (MisionGuardada.Objetivos.Num() !=
+            DatosMision->Objetivos.Num())
+        {
+            return false;
+        }
+
+        if (MisionGuardada.bCompletada != bTodosCompletados)
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("GUARDADO: estado completado inconsistente.")
+            );
+
+            return false;
+        }
+
+        MisionRestaurada.bCompletada = bTodosCompletados;
+        MisionesRestauradas.Add(MisionRestaurada);
+    }
+
+    Misiones = MoveTemp(MisionesRestauradas);
+    NotificarCambio();
+
+    return true;
+}
 
 bool UReclaimQuestComponent::IniciarMision(
     UReclaimQuestData* DatosMision
@@ -116,8 +277,7 @@ bool UReclaimQuestComponent::IniciarMision(
 
         return false;
     }
-
-    // Evita duplicados, incluso si la misión ya fue completada.
+    
     for (const FEstadoQuest& MisionExistente : Misiones)
     {
         if (IsValid(MisionExistente.DatosMision) &&
@@ -126,8 +286,7 @@ bool UReclaimQuestComponent::IniciarMision(
             return false;
         }
     }
-
-    // Comprueba que los objetivos tengan IDs válidos y diferentes.
+    
     TSet<FName> IdsObjetivos;
 
     for (const FObjetivoQuest& Objetivo : DatosMision->Objetivos)

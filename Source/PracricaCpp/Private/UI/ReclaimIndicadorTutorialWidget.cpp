@@ -1,69 +1,135 @@
 #include "UI/ReclaimIndicadorTutorialWidget.h"
 
 #include "Blueprint/WidgetTree.h"
+#include "Components/Border.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Components/TextBlock.h"
 #include "Styling/SlateColor.h"
 
-
 void UReclaimIndicadorTutorialWidget::NativeOnInitialized()
 {
-	Super::NativeOnInitialized();
+    Super::NativeOnInitialized();
 
-	if (!WidgetTree)
-	{
-		return;
-	}
+    if (!WidgetTree)
+    {
+        return;
+    }
 
-	UCanvasPanel* Panel =
-		WidgetTree->ConstructWidget<UCanvasPanel>(
-			UCanvasPanel::StaticClass(),
-			TEXT("PanelIndicadorTutorial")
-		);
+    UCanvasPanel* Panel =
+        WidgetTree->ConstructWidget<UCanvasPanel>(
+            UCanvasPanel::StaticClass(),
+            TEXT("PanelIndicadorTutorial")
+        );
 
-	if (!Panel)
-	{
-		return;
-	}
+    if (!Panel)
+    {
+        return;
+    }
 
-	WidgetTree->RootWidget = Panel;
+    WidgetTree->RootWidget = Panel;
 
-	UTextBlock* Texto =
-		WidgetTree->ConstructWidget<UTextBlock>(
-			UTextBlock::StaticClass(),
-			TEXT("TextoIndicadorTutorial")
-		);
+    UHorizontalBox* Contenedor =
+        WidgetTree->ConstructWidget<UHorizontalBox>(
+            UHorizontalBox::StaticClass(),
+            TEXT("ContenedorIndicadores")
+        );
 
-	if (!Texto)
-	{
-		return;
-	}
+    if (!Contenedor)
+    {
+        return;
+    }
 
-	Texto->SetText(
-		FText::FromString(TEXT("[T] Tutoriales"))
-	);
+    UCanvasPanelSlot* Espacio =
+        Panel->AddChildToCanvas(Contenedor);
 
-	Texto->SetColorAndOpacity(
-		FSlateColor(FLinearColor::White)
-	);
+    if (Espacio)
+    {
+        Espacio->SetAnchors(FAnchors(1.0f, 1.0f));
+        Espacio->SetAlignment(FVector2D(1.0f, 1.0f));
+        Espacio->SetPosition(FVector2D(-35.0f, -35.0f));
+        Espacio->SetAutoSize(true);
+    }
 
-	FSlateFontInfo Fuente = Texto->GetFont();
-	Fuente.Size = 16;
-	Texto->SetFont(Fuente);
+    auto CrearIndicador = [this, Contenedor](
+        const FName NombreBorde,
+        const FName NombreFondo,
+        const FName NombreTexto,
+        const FString& Etiqueta
+    )
+    {
+        UBorder* Borde =
+            WidgetTree->ConstructWidget<UBorder>(
+                UBorder::StaticClass(),
+                NombreBorde
+            );
 
-	Texto->SetShadowColorAndOpacity(FLinearColor::Black);
-	Texto->SetShadowOffset(FVector2D(2.0f, 2.0f));
+        UBorder* Fondo =
+            WidgetTree->ConstructWidget<UBorder>(
+                UBorder::StaticClass(),
+                NombreFondo
+            );
 
-	UCanvasPanelSlot* Espacio =
-		Panel->AddChildToCanvas(Texto);
+        UTextBlock* Texto =
+            WidgetTree->ConstructWidget<UTextBlock>(
+                UTextBlock::StaticClass(),
+                NombreTexto
+            );
 
-	if (Espacio)
-	{
-		Espacio->SetAnchors(FAnchors(1.0f, 1.0f));
-		Espacio->SetAlignment(FVector2D(1.0f, 1.0f));
-		Espacio->SetPosition(FVector2D(-35.0f, -35.0f));
-		Espacio->SetAutoSize(true);
-	}
+        if (!Borde || !Fondo || !Texto)
+        {
+            return;
+        }
+        
+        Borde->SetBrushColor(FLinearColor::Black);
+        Borde->SetPadding(FMargin(2.0f));
+        
+        Fondo->SetBrushColor(
+            FLinearColor(1.0f, 0.75f, 0.0f, 1.0f)
+        );
+
+        Fondo->SetPadding(
+            FMargin(10.0f, 5.0f, 10.0f, 5.0f)
+        );
+
+        Texto->SetText(FText::FromString(Etiqueta));
+
+        Texto->SetColorAndOpacity(
+            FSlateColor(FLinearColor::Black)
+        );
+
+        FSlateFontInfo Fuente = Texto->GetFont();
+        Fuente.Size = 16;
+        Texto->SetFont(Fuente);
+
+        Fondo->SetContent(Texto);
+        Borde->SetContent(Fondo);
+
+        UHorizontalBoxSlot* Slot =
+            Contenedor->AddChildToHorizontalBox(Borde);
+
+        if (Slot)
+        {
+            Slot->SetPadding(
+                FMargin(0.0f, 0.0f, 8.0f, 0.0f)
+            );
+        }
+    };
+
+    CrearIndicador(
+        TEXT("BordeTutoriales"),
+        TEXT("FondoTutoriales"),
+        TEXT("TextoTutoriales"),
+        TEXT("[T] Tutoriales")
+    );
+
+    CrearIndicador(
+        TEXT("BordeNotas"),
+        TEXT("FondoNotas"),
+        TEXT("TextoNotas"),
+        TEXT("[N] Notas")
+    );
 }
 

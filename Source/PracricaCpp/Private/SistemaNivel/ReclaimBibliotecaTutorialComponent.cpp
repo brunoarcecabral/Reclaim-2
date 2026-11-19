@@ -15,6 +15,11 @@
 #include "TimerManager.h"
 #include "UI/ReclaimBibliotecaTutorialWidget.h"
 #include "UI/ReclaimIndicadorTutorialWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "SistemaQuest/ReclaimNotaQuestWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "SistemaQuest/ReclaimNotaQuestWidget.h"
+#include "UI/ReclaimBibliotecaNotasWidget.h"
 
 
 UReclaimBibliotecaTutorialComponent::UReclaimBibliotecaTutorialComponent()
@@ -33,8 +38,7 @@ void UReclaimBibliotecaTutorialComponent::BeginPlay()
     {
         return;
     }
-
-    // Espera a que el personaje tenga su controlador local.
+    
     Mundo->GetTimerManager().SetTimer(
         TimerInicializacion,
         this,
@@ -98,8 +102,7 @@ void UReclaimBibliotecaTutorialComponent::IntentarInicializar()
     }
 
     ControladorLocal = Controlador;
-
-    // Conectamos la tecla T al jugador local.
+    
     if (!IsValid(EntradaTutorial))
     {
         EntradaTutorial = NewObject<UInputComponent>(
@@ -119,12 +122,20 @@ void UReclaimBibliotecaTutorialComponent::IntentarInicializar()
             );
 
             Enlace.bConsumeInput = true;
+            
+            FInputKeyBinding& EnlaceNotas = EntradaTutorial->BindKey(
+    EKeys::N,
+    IE_Pressed,
+    this,
+    &UReclaimBibliotecaTutorialComponent::AlternarNotas
+);
 
+            EnlaceNotas.bConsumeInput = true;
+            
             Controlador->PushInputComponent(EntradaTutorial);
         }
     }
-
-    // Creamos la indicación pequeña en la pantalla del jugador.
+    
     if (!IsValid(Indicador))
     {
         UReclaimIndicadorTutorialWidget* NuevoIndicador =
@@ -145,8 +156,7 @@ void UReclaimBibliotecaTutorialComponent::IntentarInicializar()
             }
         }
     }
-
-    // Cuando la tecla y el indicador están listos, programamos el aviso.
+    
     if (IsValid(EntradaTutorial) && IsValid(Indicador))
     {
         if (ULocalPlayer* JugadorLocal = Controlador->GetLocalPlayer())
@@ -172,19 +182,151 @@ void UReclaimBibliotecaTutorialComponent::IntentarInicializar()
     }
 }
 
+bool UReclaimBibliotecaTutorialComponent::HayNotaEmergenteAbierta() const
+{
+    if (!IsValid(ControladorLocal))
+    {
+        return false;
+    }
+
+    TArray<UUserWidget*> VentanasDeNota;
+
+    UWidgetBlueprintLibrary::GetAllWidgetsOfClass(
+        this,
+        VentanasDeNota,
+        UReclaimNotaQuestWidget::StaticClass(),
+        true
+    );
+
+    for (UUserWidget* Ventana : VentanasDeNota)
+    {
+        if (IsValid(Ventana) &&
+            Ventana->IsInViewport() &&
+            Ventana->GetOwningPlayer() == ControladorLocal)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void UReclaimBibliotecaTutorialComponent::AlternarNotas()
+{
+    if (IsValid(VentanaNotas))
+    {
+        CerrarNotas();
+        return;
+    }
+    
+    if (IsValid(VentanaBiblioteca) || HayNotaEmergenteAbierta())
+    {
+        return;
+    }
+
+    AbrirNotas();
+}
+
+void UReclaimBibliotecaTutorialComponent::AbrirNotas()
+{
+    if (!IsValid(ControladorLocal) ||
+        !ControladorLocal->IsLocalController() ||
+        IsValid(VentanaNotas))
+    {
+        return;
+    }
+
+    UReclaimBibliotecaNotasWidget* NuevaVentana =
+        CreateWidget<UReclaimBibliotecaNotasWidget>(
+            ControladorLocal,
+            UReclaimBibliotecaNotasWidget::StaticClass()
+        );
+
+    if (!IsValid(NuevaVentana))
+    {
+        return;
+    }
+
+    NuevaVentana->ActualizarLista();
+
+    NuevaVentana->AlCerrarBiblioteca.AddDynamic(
+        this,
+        &UReclaimBibliotecaTutorialComponent::CerrarNotas
+    );
+
+    if (!NuevaVentana->AddToPlayerScreen(120))
+    {
+        NuevaVentana->AlCerrarBiblioteca.RemoveDynamic(
+            this,
+            &UReclaimBibliotecaTutorialComponent::CerrarNotas
+        );
+
+        return;
+    }
+
+    VentanaNotas = NuevaVentana;
+
+    bCursorAntesDeNotas = ControladorLocal->bShowMouseCursor;
+    ControladorLocal->bShowMouseCursor = true;
+
+    FInputModeGameAndUI ModoEntrada;
+    ModoEntrada.SetWidgetToFocus(VentanaNotas->TakeWidget());
+
+    ControladorLocal->SetInputMode(ModoEntrada);
+    VentanaNotas->SetUserFocus(ControladorLocal);
+}
+
+void UReclaimBibliotecaTutorialComponent::CerrarNotas()
+{
+    if (!IsValid(VentanaNotas))
+    {
+        VentanaNotas = nullptr;
+        return;
+    }
+
+    VentanaNotas->AlCerrarBiblioteca.RemoveDynamic(
+        this,
+        &UReclaimBibliotecaTutorialComponent::CerrarNotas
+    );
+
+    VentanaNotas->RemoveFromParent();
+    VentanaNotas = nullptr;
+
+    if (!IsValid(ControladorLocal))
+    {
+        return;
+    }
+
+    ControladorLocal->bShowMouseCursor = bCursorAntesDeNotas;
+
+    if (bCursorAntesDeNotas)
+    {
+        FInputModeGameAndUI ModoEntrada;
+        ControladorLocal->SetInputMode(ModoEntrada);
+    }
+    else
+    {
+        FInputModeGameOnly ModoEntrada;
+        ControladorLocal->SetInputMode(ModoEntrada);
+    }
+}
 
 void UReclaimBibliotecaTutorialComponent::AlternarBiblioteca()
 {
     if (IsValid(VentanaBiblioteca))
     {
         CerrarBiblioteca();
+        CerrarNotas();
+        return;
     }
-    else
+    
+    if (IsValid(VentanaNotas) || HayNotaEmergenteAbierta())
     {
-        AbrirBiblioteca();
+        return;
     }
-}
 
+    AbrirBiblioteca();
+}
 
 void UReclaimBibliotecaTutorialComponent::AbrirBiblioteca()
 {
@@ -277,8 +419,7 @@ TArray<UReclaimNotaQuestData*>
 UReclaimBibliotecaTutorialComponent::ObtenerTutorialesDisponibles() const
 {
     TArray<UReclaimNotaQuestData*> Tutoriales;
-
-    // Los controles básicos están disponibles desde el comienzo.
+    
     if (IsValid(TutorialControles))
     {
         Tutoriales.Add(TutorialControles);

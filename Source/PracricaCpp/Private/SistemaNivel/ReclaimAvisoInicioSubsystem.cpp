@@ -78,8 +78,7 @@ void UReclaimAvisoInicioSubsystem::MostrarAviso()
     {
         return;
     }
-
-    // Creamos los textos del aviso inicial.
+    
     UReclaimNotaQuestData* DatosAviso =
         NewObject<UReclaimNotaQuestData>(this);
 
@@ -120,7 +119,7 @@ void UReclaimAvisoInicioSubsystem::MostrarAviso()
 
     bCursorEstabaVisible = Controlador->bShowMouseCursor;
 
-    FInputModeGameAndUI ModoEntrada;
+    FInputModeUIOnly ModoEntrada;
     ModoEntrada.SetWidgetToFocus(VentanaAviso->TakeWidget());
 
     Controlador->SetInputMode(ModoEntrada);

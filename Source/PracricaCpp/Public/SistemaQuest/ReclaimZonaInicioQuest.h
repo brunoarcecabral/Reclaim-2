@@ -19,7 +19,13 @@ class PRACRICACPP_API AReclaimZonaInicioQuest : public AActor
 public:
 
 	AReclaimZonaInicioQuest();
+	
+	UPROPERTY(EditInstanceOnly, Category = "Reclaim|Guardado")
+	FName IdGuardado = NAME_None;
 
+	bool EstaActivadaParaGuardado() const;
+	bool RestaurarActivada();
+	
 	virtual void GetLifetimeReplicatedProps(
 		TArray<FLifetimeProperty>& OutLifetimeProps
 	) const override;
@@ -31,16 +37,14 @@ protected:
 	virtual void EndPlay(
 		const EEndPlayReason::Type EndPlayReason
 	) override;
-
-	// Área donde debe reunirse el grupo.
+	
 	UPROPERTY(
 		VisibleAnywhere,
 		BlueprintReadOnly,
 		Category = "Quest"
 	)
 	TObjectPtr<UBoxComponent> Zona;
-
-	// Bloquea el paso hasta que se inicie la misión.
+	
 	UPROPERTY(
 		VisibleAnywhere,
 		BlueprintReadOnly,
@@ -77,7 +81,6 @@ private:
 
 	void QuitarAvisosLocales();
 	
-	// Se replica para abrir la barrera también en los clientes.
 	UPROPERTY(ReplicatedUsing = OnRep_EventoActivado)
 	bool bEventoActivado = false;
 

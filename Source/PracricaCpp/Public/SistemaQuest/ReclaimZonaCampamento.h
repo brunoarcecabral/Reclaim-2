@@ -19,7 +19,13 @@ class PRACRICACPP_API AReclaimZonaCampamento : public AActor
 public:
 
 	AReclaimZonaCampamento();
+	
+	UPROPERTY(EditInstanceOnly, Category = "Reclaim|Guardado")
+	FName IdGuardado = NAME_None;
 
+	bool EstaAbiertaParaGuardado() const;
+	bool RestaurarAbierta();
+	
 	virtual void GetLifetimeReplicatedProps(
 		TArray<FLifetimeProperty>& OutLifetimeProps
 	) const override;
@@ -31,12 +37,10 @@ protected:
 	virtual void EndPlay(
 		const EEndPlayReason::Type EndPlayReason
 	) override;
-
-	// Zona en la que deben reunirse todos.
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Quest")
 	TObjectPtr<UBoxComponent> Zona;
-
-	// Muro temporal que bloquea la entrada al campamento.
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Quest")
 	TObjectPtr<UBoxComponent> Barrera;
 

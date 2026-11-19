@@ -27,8 +27,7 @@ void UReclaimNivelComponent::BeginPlay()
     {
         return;
     }
-
-    // El servidor inicia el nivel de este personaje.
+    
     if (Propietario->HasAuthority())
     {
         EstadoNivel.Nivel = 1;
@@ -45,8 +44,7 @@ void UReclaimNivelComponent::BeginPlay()
     {
         return;
     }
-
-    // Puede que el controlador local todavía no esté listo en BeginPlay.
+    
     Mundo->GetTimerManager().SetTimer(
         TimerCrearInterfaz,
         this,
@@ -160,7 +158,45 @@ bool UReclaimNivelComponent::AgregarExperiencia(int32 Cantidad)
 
     return true;
 }
+bool UReclaimNivelComponent::RestaurarEstadoNivel(
+    const FEstadoNivelReclaim& EstadoGuardado
+)
+{
+    AActor* Propietario = GetOwner();
 
+    if (!IsValid(Propietario) || !Propietario->HasAuthority())
+    {
+        return false;
+    }
+
+    const bool bNivelValido =
+        EstadoGuardado.Nivel >= 1 &&
+        EstadoGuardado.Nivel <= NivelMaximo;
+
+    const bool bExperienciaValida =
+        EstadoGuardado.ExperienciaActual >= 0 &&
+        (
+            (EstadoGuardado.Nivel < NivelMaximo &&
+             EstadoGuardado.ExperienciaRequerida > 0 &&
+             EstadoGuardado.ExperienciaActual <
+                 EstadoGuardado.ExperienciaRequerida)
+            ||
+            (EstadoGuardado.Nivel == NivelMaximo &&
+             EstadoGuardado.ExperienciaActual == 0 &&
+             EstadoGuardado.ExperienciaRequerida == 0)
+        );
+
+    if (!bNivelValido || !bExperienciaValida)
+    {
+        return false;
+    }
+
+    EstadoNivel = EstadoGuardado;
+    
+    NotificarCambio();
+
+    return true;
+}
 
 void UReclaimNivelComponent::OnRep_EstadoNivel()
 {
@@ -227,8 +263,7 @@ void UReclaimNivelComponent::IntentarCrearInterfaz()
     }
 
     InterfazNivel = NuevaInterfaz;
-
-    // Ya no necesitamos seguir intentando crearla.
+    
     Mundo->GetTimerManager().ClearTimer(TimerCrearInterfaz);
 }
 

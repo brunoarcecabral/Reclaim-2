@@ -10,6 +10,7 @@ class UInputComponent;
 class UReclaimBibliotecaTutorialWidget;
 class UReclaimIndicadorTutorialWidget;
 class UReclaimNotaQuestData;
+class UReclaimBibliotecaNotasWidget;
 
 
 UCLASS(ClassGroup = (Reclaim), meta = (BlueprintSpawnableComponent))
@@ -67,7 +68,21 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UReclaimBibliotecaTutorialWidget> VentanaBiblioteca;
+	
+	UPROPERTY()
+	TObjectPtr<UReclaimBibliotecaNotasWidget> VentanaNotas;
 
+	bool bCursorAntesDeNotas = false;
+
+	bool HayNotaEmergenteAbierta() const;
+
+	void AlternarNotas();
+
+	void AbrirNotas();
+
+	UFUNCTION()
+	void CerrarNotas();
+	
 	FTimerHandle TimerInicializacion;
 
 	bool bCursorEstabaVisible = false;

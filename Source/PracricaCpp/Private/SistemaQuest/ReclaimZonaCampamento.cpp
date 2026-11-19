@@ -51,6 +51,28 @@ void AReclaimZonaCampamento::GetLifetimeReplicatedProps(
     DOREPLIFETIME(AReclaimZonaCampamento, bAbierta);
 }
 
+bool AReclaimZonaCampamento::EstaAbiertaParaGuardado() const
+{
+    return bAbierta;
+}
+
+bool AReclaimZonaCampamento::RestaurarAbierta()
+{
+    if (!HasAuthority())
+    {
+        return false;
+    }
+
+    bAbierta = true;
+
+    ActualizarBarrera();
+    ActualizarAvisosLocales();
+
+    GetWorldTimerManager().ClearTimer(TimerRevision);
+    ForceNetUpdate();
+
+    return true;
+}
 
 void AReclaimZonaCampamento::BeginPlay()
 {
@@ -194,8 +216,7 @@ void AReclaimZonaCampamento::RevisarGrupo()
         GetWorldTimerManager().ClearTimer(TimerRevision);
         return;
     }
-
-    // La misión siguiente debe tener datos válidos.
+    
     if (!IsValid(MisionSiguiente) ||
         MisionSiguiente->IdMision.IsNone() ||
         MisionSiguiente->Objetivos.IsEmpty())
@@ -234,8 +255,7 @@ void AReclaimZonaCampamento::RevisarGrupo()
             bMisionSiguienteYaExiste = true;
         }
     }
-
-    // Esperamos a que la misión de encontrar el campamento esté activa.
+    
     if (!bMisionActualEncontrada)
     {
         return;

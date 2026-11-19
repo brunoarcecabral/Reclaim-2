@@ -36,6 +36,11 @@ protected:
 		const FGeometry& InGeometry,
 		const FKeyEvent& InKeyEvent
 	) override;
+	
+	virtual void NativeTick(
+	const FGeometry& MyGeometry,
+	float InDeltaTime
+) override;
 
 private:
 
@@ -49,5 +54,8 @@ private:
 	TObjectPtr<UTextBlock> TextoContinuar;
 
 	bool bContinuarConEscape = false;
+	
+	bool bEsCierreAutomatico = false;
+
 };
 

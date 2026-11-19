@@ -9,7 +9,6 @@ class UReclaimBibliotecaTutorialComponent;
 class UScrollBox;
 
 
-// Avisa al componente del jugador que debe cerrar la ventana.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAlCerrarBibliotecaTutorial);
 
 
@@ -22,8 +21,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Reclaim|Tutoriales")
 	FAlCerrarBibliotecaTutorial AlCerrarBiblioteca;
-
-	// Construye la lista con los tutoriales disponibles.
+	
 	void Configurar(UReclaimBibliotecaTutorialComponent* Biblioteca);
 
 protected:

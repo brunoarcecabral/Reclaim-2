@@ -30,13 +30,28 @@ AReclaimZonaObjetivoQuest::AReclaimZonaObjetivoQuest()
     Zona->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     Zona->SetGenerateOverlapEvents(true);
 }
+bool AReclaimZonaObjetivoQuest::EstaActivadaParaGuardado() const
+{
+    return bObjetivoActivado;
+}
 
+bool AReclaimZonaObjetivoQuest::RestaurarActivada()
+{
+    if (!HasAuthority())
+    {
+        return false;
+    }
+
+    bObjetivoActivado = true;
+    GetWorldTimerManager().ClearTimer(TimerRevision);
+
+    return true;
+}
 
 void AReclaimZonaObjetivoQuest::BeginPlay()
 {
     Super::BeginPlay();
-
-    // Solo el servidor actualiza la misión compartida.
+    
     if (!HasAuthority())
     {
         return;

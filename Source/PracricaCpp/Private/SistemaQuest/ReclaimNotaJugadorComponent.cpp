@@ -7,8 +7,7 @@
 UReclaimNotaJugadorComponent::UReclaimNotaJugadorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// Permite que el componente del personaje envíe la petición al servidor.
+	
 	SetIsReplicatedByDefault(true);
 }
 
@@ -48,8 +47,7 @@ void UReclaimNotaJugadorComponent::ServidorContinuarNota_Implementation(
 	{
 		return;
 	}
-
-	// El servidor comprueba que este jugador pueda continuar.
+	
 	if (!Nota->PuedeContinuar(Personaje))
 	{
 		return;

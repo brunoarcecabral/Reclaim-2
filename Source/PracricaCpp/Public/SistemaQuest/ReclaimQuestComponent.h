@@ -8,9 +8,8 @@
 
 class APlayerController;
 class UReclaimMisionesWidget;
+class UReclaimSaveGame;
 
-
-// Progreso de un objetivo.
 USTRUCT(BlueprintType)
 struct FProgresoObjetivoQuest
 {
@@ -23,8 +22,6 @@ struct FProgresoObjetivoQuest
     int32 CantidadActual = 0;
 };
 
-
-// Estado compartido de una misión.
 USTRUCT(BlueprintType)
 struct FEstadoQuest
 {
@@ -40,8 +37,6 @@ struct FEstadoQuest
     bool bCompletada = false;
 };
 
-
-// Evento para actualizar la interfaz sin usar Tick.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAlCambiarMisiones);
 
 
@@ -63,8 +58,13 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Quest")
     TArray<FEstadoQuest> ObtenerMisiones() const;
-
-    // Estas funciones deben ejecutarse en el servidor.
+    
+    bool CopiarMisionesAlGuardado(UReclaimSaveGame* DatosGuardado) const;
+    
+    bool RestaurarMisionesDesdeGuardado(
+        const UReclaimSaveGame* DatosGuardado
+    );
+    
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
     bool IniciarMision(UReclaimQuestData* DatosMision);
 

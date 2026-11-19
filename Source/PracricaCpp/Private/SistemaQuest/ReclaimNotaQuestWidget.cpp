@@ -11,6 +11,7 @@
 #include "InputCoreTypes.h"
 #include "SistemaQuest/ReclaimNotaQuestData.h"
 #include "Styling/SlateColor.h"
+#include "GameFramework/PlayerController.h"
 
 
 void UReclaimNotaQuestWidget::NativeOnInitialized()
@@ -142,7 +143,6 @@ void UReclaimNotaQuestWidget::NativeOnInitialized()
 
     if (TextoContinuar)
     {
-        // Las notas normales siguen usando E.
         TextoContinuar->SetText(
             FText::FromString(TEXT("Pulsa E para continuar"))
         );
@@ -225,6 +225,7 @@ FReply UReclaimNotaQuestWidget::NativeOnKeyDown(
 }
 void UReclaimNotaQuestWidget::UsarCierreAutomatico()
 {
+    bEsCierreAutomatico = true;
     bContinuarConEscape = true;
 
     if (IsValid(TextoContinuar))
@@ -236,5 +237,36 @@ void UReclaimNotaQuestWidget::UsarCierreAutomatico()
         );
     }
 }
+void UReclaimNotaQuestWidget::NativeTick(
+    const FGeometry& MyGeometry,
+    float InDeltaTime
+)
+{
+    Super::NativeTick(MyGeometry, InDeltaTime);
+    
+    if (bEsCierreAutomatico || !IsInViewport())
+    {
+        return;
+    }
+
+    APlayerController* Controlador = GetOwningPlayer();
+
+    if (!IsValid(Controlador) ||
+        !Controlador->IsLocalController())
+    {
+        return;
+    }
+    
+    if (!HasUserFocus(Controlador) &&
+        !HasUserFocusedDescendants(Controlador))
+    {
+        FInputModeUIOnly ModoEntrada;
+        ModoEntrada.SetWidgetToFocus(TakeWidget());
+
+        Controlador->SetInputMode(ModoEntrada);
+        SetUserFocus(Controlador);
+    }
+}
+
 
 

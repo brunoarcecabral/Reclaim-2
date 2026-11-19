@@ -56,6 +56,7 @@ public:
         Category = "Reclaim|Nivel"
     )
     bool AgregarExperiencia(int32 Cantidad);
+    bool RestaurarEstadoNivel(const FEstadoNivelReclaim& EstadoGuardado);
 
 protected:
 

@@ -19,6 +19,8 @@
 #include "OnlineSessionSettings.h"
 
 #include "ReclaimSessionSubsystem.h"
+#include "SistemaGuardado/ReclaimGuardadoSubsystem.h"
+
 
 void UReclaimMultiplayerMenu::NativeOnInitialized()
 {
@@ -28,8 +30,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
     {
         return;
     }
-
-    // Panel principal que ocupa toda la pantalla.
+    
     UCanvasPanel* PanelPrincipal =
         WidgetTree->ConstructWidget<UCanvasPanel>(
             UCanvasPanel::StaticClass(),
@@ -37,8 +38,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         );
 
     WidgetTree->RootWidget = PanelPrincipal;
-
-    // Imagen de fondo.
+    
     UImage* ImagenFondo =
         WidgetTree->ConstructWidget<UImage>(
             UImage::StaticClass(),
@@ -54,8 +54,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
     {
         ImagenFondo->SetBrushFromTexture(TexturaFondo);
     }
-
-    // La imagen es decorativa y no bloquea los clics.
+    
     ImagenFondo->SetVisibility(ESlateVisibility::HitTestInvisible);
 
     UCanvasPanelSlot* SlotFondo =
@@ -63,8 +62,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
 
     SlotFondo->SetAnchors(FAnchors(0.0f, 0.0f, 1.0f, 1.0f));
     SlotFondo->SetOffsets(FMargin(0.0f));
-
-    // Contenedor de botones, anclado abajo a la izquierda.
+    
     UVerticalBox* Contenedor =
         WidgetTree->ConstructWidget<UVerticalBox>(
             UVerticalBox::StaticClass(),
@@ -78,8 +76,8 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
     SlotMenu->SetAlignment(FVector2D(0.0f, 1.0f));
     SlotMenu->SetPosition(FVector2D(70.0f, -55.0f));
     SlotMenu->SetSize(FVector2D(300.0f, 420.0f));
-
-    // Función local para crear botones del mismo tamaño.
+    
+    
     auto CrearBoton = [this, Contenedor](
         const FName NombreBoton,
         const FName NombreTexto,
@@ -129,15 +127,31 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
 
         return Boton;
     };
-
-    // Abre el mapa directamente, sin crear una sesión.
+    
     BotonJugarSolo = CrearBoton(
         TEXT("BotonJugarSolo"),
         TEXT("TextoJugarSolo"),
         TEXT("Jugar solo")
     );
+    BotonContinuarPartida = CrearBoton(
+    TEXT("BotonContinuarPartida"),
+    TEXT("TextoContinuarPartida"),
+    TEXT("Continuar partida")
+);
 
-    // Mantiene el comportamiento multijugador existente.
+    bool bExisteGuardado = false;
+
+    if (UGameInstance* Instancia = GetGameInstance())
+    {
+        if (UReclaimGuardadoSubsystem* SistemaGuardado =
+            Instancia->GetSubsystem<UReclaimGuardadoSubsystem>())
+        {
+            bExisteGuardado = SistemaGuardado->ExistePartidaGuardada();
+        }
+    }
+
+    BotonContinuarPartida->SetIsEnabled(bExisteGuardado);
+    
     BotonCrearPartida = CrearBoton(
         TEXT("BotonCrearPartida"),
         TEXT("TextoCrear"),
@@ -165,8 +179,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         Contenedor->AddChildToVerticalBox(TextoEstado);
 
     SlotEstado->SetPadding(FMargin(0.0f, 0.0f, 0.0f, 6.0f));
-
-    // Área para mostrar las partidas encontradas.
+    
     USizeBox* CajaLista =
         WidgetTree->ConstructWidget<USizeBox>();
 
@@ -185,8 +198,7 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         Contenedor->AddChildToVerticalBox(CajaLista);
 
     SlotLista->SetPadding(FMargin(0.0f, 0.0f, 0.0f, 6.0f));
-
-    // Campo para escribir el número de la partida.
+    
     USizeBox* CajaEntrada =
         WidgetTree->ConstructWidget<USizeBox>();
 
@@ -234,7 +246,11 @@ void UReclaimMultiplayerMenu::NativeOnInitialized()
         this,
         &UReclaimMultiplayerMenu::JugarSolo
     );
-
+    BotonContinuarPartida->OnClicked.AddUniqueDynamic(
+        this,
+        &UReclaimMultiplayerMenu::ContinuarPartida
+    );
+    
     BotonCrearPartida->OnClicked.AddUniqueDynamic(
         this,
         &UReclaimMultiplayerMenu::CrearPartida
@@ -304,9 +320,47 @@ void UReclaimMultiplayerMenu::NativeDestruct()
 
     Super::NativeDestruct();
 }
+void UReclaimMultiplayerMenu::ContinuarPartida()
+{
+    UGameInstance* Instancia = GetGameInstance();
+
+    UReclaimGuardadoSubsystem* SistemaGuardado =
+        IsValid(Instancia)
+            ? Instancia->GetSubsystem<UReclaimGuardadoSubsystem>()
+            : nullptr;
+
+    if (!IsValid(SistemaGuardado) ||
+        !SistemaGuardado->PrepararPartidaGuardada())
+    {
+        if (IsValid(TextoEstado))
+        {
+            TextoEstado->SetText(
+                FText::FromString(
+                    TEXT("No se pudo cargar la partida guardada.")
+                )
+            );
+        }
+
+        return;
+    }
+
+    UGameplayStatics::OpenLevel(
+        this,
+        FName(TEXT("/Game/ThirdPerson/Lvl_ThirdPerson"))
+    );
+}
 
 void UReclaimMultiplayerMenu::JugarSolo()
 {
+    if (UGameInstance* Instancia = GetGameInstance())
+    {
+        if (UReclaimGuardadoSubsystem* SistemaGuardado =
+            Instancia->GetSubsystem<UReclaimGuardadoSubsystem>())
+        {
+            SistemaGuardado->LimpiarDatosPendientes();
+        }
+    }
+
     UGameplayStatics::OpenLevel(
         this,
         FName(TEXT("/Game/ThirdPerson/Lvl_ThirdPerson"))
