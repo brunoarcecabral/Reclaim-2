@@ -6,6 +6,7 @@
 
 
 class UBoxComponent;
+class UReclaimQuestData;
 
 
 UCLASS()
@@ -43,7 +44,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest")
 	FName IdObjetivo = NAME_None;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest")
+	TObjectPtr<UReclaimQuestData> MisionSiguiente;
+	
 	UPROPERTY(
 		EditAnywhere,
 		BlueprintReadOnly,

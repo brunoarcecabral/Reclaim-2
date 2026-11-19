@@ -207,8 +207,9 @@ void AReclaimNotaQuestActor::RevisarZona()
     for (const FEstadoQuest& Estado : Misiones)
     {
         if (!IsValid(Estado.DatosMision) ||
-            Estado.DatosMision->IdMision != DatosNota->IdMisionActual ||
-            Estado.bCompletada)
+    Estado.DatosMision->IdMision != DatosNota->IdMisionActual ||
+    (Estado.bCompletada && !bPermitirMisionCompletada))
+        
         {
             continue;
         }
@@ -307,10 +308,12 @@ bool AReclaimNotaQuestActor::PuedeContinuar(
 bool AReclaimNotaQuestActor::FinalizarLectura()
 {
     if (!HasAuthority() ||
-        !bNotaAbierta ||
-        bNotaFinalizada ||
-        !IsValid(DatosNota) ||
-        DatosNota->IdObjetivoLectura.IsNone())
+    !bNotaAbierta ||
+    bNotaFinalizada ||
+    !IsValid(DatosNota) ||
+    (DatosNota->IdObjetivoLectura.IsNone() &&
+     !bPermitirMisionCompletada))
+    
     {
         return false;
     }
@@ -337,22 +340,25 @@ bool AReclaimNotaQuestActor::FinalizarLectura()
         return false;
     }
     
-    const bool bLecturaCompletada =
-        ComponenteQuest->AvanzarObjetivo(
-            DatosNota->IdMisionActual,
-            DatosNota->IdObjetivoLectura,
-            1
-        );
-
-    if (!bLecturaCompletada)
+    if (!DatosNota->IdObjetivoLectura.IsNone())
     {
-        UE_LOG(
-            LogTemp,
-            Warning,
-            TEXT("NOTA QUEST: No se pudo completar el objetivo de lectura.")
-        );
+        const bool bLecturaCompletada =
+            ComponenteQuest->AvanzarObjetivo(
+                DatosNota->IdMisionActual,
+                DatosNota->IdObjetivoLectura,
+                1
+            );
 
-        return false;
+        if (!bLecturaCompletada)
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("NOTA QUEST: No se pudo completar el objetivo de lectura.")
+            );
+
+            return false;
+        }
     }
     
     if (IsValid(DatosNota->MisionSiguiente))

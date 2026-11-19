@@ -60,7 +60,10 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nota")
     TObjectPtr<UReclaimNotaQuestData> DatosNota;
-
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nota")
+    bool bPermitirMisionCompletada = false;
+    
     UPROPERTY(
         EditAnywhere,
         BlueprintReadOnly,

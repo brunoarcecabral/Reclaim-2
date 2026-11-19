@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerState.h"
 #include "SistemaQuest/ReclaimQuestComponent.h"
 #include "TimerManager.h"
+#include "SistemaQuest/ReclaimQuestData.h"
 
 
 AReclaimZonaObjetivoQuest::AReclaimZonaObjetivoQuest()
@@ -173,8 +174,41 @@ void AReclaimZonaObjetivoQuest::RevisarGrupo()
 
     if (ComponenteQuest->AvanzarObjetivo(IdMision, IdObjetivo, 1))
     {
-        bObjetivoActivado = true;
+        // Si esta zona tiene una misión siguiente configurada,
+        // comprobamos que la misión actual haya terminado.
+        if (IsValid(MisionSiguiente))
+        {
+            const TArray<FEstadoQuest> Misiones =
+                ComponenteQuest->ObtenerMisiones();
 
+            bool bMisionActualCompletada = false;
+
+            for (const FEstadoQuest& Estado : Misiones)
+            {
+                if (IsValid(Estado.DatosMision) &&
+                    Estado.DatosMision->IdMision == IdMision &&
+                    Estado.bCompletada)
+                {
+                    bMisionActualCompletada = true;
+                    break;
+                }
+            }
+
+            if (bMisionActualCompletada)
+            {
+                if (!ComponenteQuest->IniciarMision(MisionSiguiente))
+                {
+                    UE_LOG(
+                        LogTemp,
+                        Warning,
+                        TEXT("ZONA QUEST: No se pudo iniciar la mision siguiente.")
+                    );
+                }
+            }
+        }
+
+        bObjetivoActivado = true;
+        
         GetWorldTimerManager().ClearTimer(TimerRevision);
 
         UE_LOG(
