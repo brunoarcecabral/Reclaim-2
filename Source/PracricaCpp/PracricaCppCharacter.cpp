@@ -19,6 +19,12 @@
 #include "PracricaCpp.h"
 #include "UI/ReclaimPausaComponent.h"
 #include "Engine/World.h"
+#include "SistemaArmas/ReclaimArmaComponent.h"
+#include "SistemaArmas/ReclaimArmaRecogible.h"
+#include "SistemaTarjeta/ReclaimTarjetaComponent.h"
+#include "SistemaTarjeta/ReclaimTarjetaRecogible.h"
+#include "SistemaTarjeta/ReclaimPuertaSeguridad.h"
+
 
 
 APracricaCppCharacter::APracricaCppCharacter()
@@ -77,6 +83,14 @@ void APracricaCppCharacter::SetupPlayerInputComponent(
             ComponentePausa,
             &UReclaimPausaComponent::AbrirMenuPausa
         );
+        
+        PlayerInputComponent->BindKey(
+    EKeys::Two,
+    IE_Pressed,
+    this,
+    &APracricaCppCharacter::AlternarArma
+);
+
     }
     
     PlayerInputComponent->BindKey(
@@ -283,6 +297,32 @@ void APracricaCppCharacter::CGanarExperiencia(float CExpObtenida)
 
 void APracricaCppCharacter::Interact()
 {
+    UReclaimArmaComponent* Arma =
+    FindComponentByClass<UReclaimArmaComponent>();
+    
+    if (IsValid(Arma) && IsValid(Arma->BuscarArmaCercana()))
+    {
+        Arma->RecogerArmaCercana();
+        return;
+    }
+    
+    UReclaimTarjetaComponent* Tarjeta =
+    FindComponentByClass<UReclaimTarjetaComponent>();
+
+    if (IsValid(Tarjeta) &&
+        IsValid(Tarjeta->BuscarTarjetaCercana()))
+    {
+        Tarjeta->SolicitarTarjetaCercana();
+        return;
+    }
+    
+    if (IsValid(Tarjeta) &&
+    IsValid(Tarjeta->BuscarPuertaCercana()))
+    {
+        Tarjeta->SolicitarAbrirPuertaCercana();
+        return;
+    }
+    
     const FVector Start =
         GetActorLocation() + FVector(0.f, 0.f, 60.f);
 
@@ -299,7 +339,7 @@ void APracricaCppCharacter::Interact()
         ETraceTypeQuery::TraceTypeQuery1,
         true,
         ActorsToIgnore,
-        EDrawDebugTrace::ForDuration,
+        EDrawDebugTrace::None,
         HitResult,
         true
     );
@@ -323,19 +363,8 @@ void APracricaCppCharacter::Interact()
             return;
         }
     }
-
-    // Mensaje temporal existente para la interacción.
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(
-            -1,
-            1.f,
-            FColor::Red,
-            TEXT("No hay nada interactuable frente a ti.")
-        );
-    }
+    
 }
-
 
 void APracricaCppCharacter::ComunicarPuzzle_Implementation(bool llave)
 {
@@ -363,5 +392,15 @@ bool APracricaCppCharacter::EsPartidaMultijugador() const
     const UWorld* Mundo = GetWorld();
 
     return Mundo && Mundo->GetNetMode() != NM_Standalone;
+}
+void APracricaCppCharacter::AlternarArma()
+{
+    UReclaimArmaComponent* Arma =
+        FindComponentByClass<UReclaimArmaComponent>();
+
+    if (IsValid(Arma))
+    {
+        Arma->AlternarArma();
+    }
 }
 

@@ -19,7 +19,13 @@ class PRACRICACPP_API AReclaimNotaQuestActor : public AActor
     GENERATED_BODY()
 
 public:
+    
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastAvisarNotaAdicional();
 
+    UFUNCTION(BlueprintImplementableEvent, Category = "Nota")
+    void MostrarAvisoNotaAdicional();
+    
     AReclaimNotaQuestActor();
 
     virtual void GetLifetimeReplicatedProps(

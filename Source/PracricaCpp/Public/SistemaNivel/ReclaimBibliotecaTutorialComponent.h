@@ -54,6 +54,13 @@ protected:
 		Category = "Reclaim|Tutoriales"
 	)
 	TObjectPtr<UReclaimNotaQuestData> TutorialWallRun;
+	
+	UPROPERTY(
+	EditDefaultsOnly,
+	BlueprintReadOnly,
+	Category = "Reclaim|Tutoriales"
+)
+	TObjectPtr<UReclaimNotaQuestData> TutorialArma;
 
 private:
 

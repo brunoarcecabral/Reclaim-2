@@ -7,18 +7,17 @@
 
 class UReclaimNotaQuestData;
 
-
 UENUM(BlueprintType)
 enum class ETutorialReclaim : uint8
 {
     Ninguno,
     Nivel,
-    WallRun
+    WallRun,
+    Arma
 };
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAlCambiarTutorialNivel);
-
 
 UCLASS(ClassGroup = (Reclaim), meta = (BlueprintSpawnableComponent))
 class PRACRICACPP_API UReclaimTutorialNivelComponent : public UActorComponent
@@ -41,11 +40,12 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Reclaim|Tutorial")
     UReclaimNotaQuestData* ObtenerDatosTutorial() const;
-
-    // Estas funciones se ejecutan en el servidor.
+    
     bool AbrirTutorial();
 
     bool AbrirTutorialWallRun();
+    
+    bool AbrirTutorialArma();
 
     bool CerrarTutorial();
 
@@ -54,8 +54,7 @@ protected:
     virtual void EndPlay(
         const EEndPlayReason::Type EndPlayReason
     ) override;
-
-    // Conserva la asignación de DA_TutorialNivel.
+    
     UPROPERTY(
         EditAnywhere,
         BlueprintReadOnly,
@@ -69,8 +68,14 @@ protected:
         Category = "Reclaim|Tutorial"
     )
     TObjectPtr<UReclaimNotaQuestData> DatosTutorialWallRun;
-
-    // Tiempo en segundos que permanece abierto cada tutorial.
+    
+    UPROPERTY(
+    EditAnywhere,
+    BlueprintReadOnly,
+    Category = "Reclaim|Tutorial"
+)
+    TObjectPtr<UReclaimNotaQuestData> DatosTutorialArma;
+    
     UPROPERTY(
         EditAnywhere,
         BlueprintReadOnly,
@@ -83,8 +88,7 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_TutorialActual)
     ETutorialReclaim TutorialActual = ETutorialReclaim::Ninguno;
-
-    // La cola se administra en el servidor.
+    
     TArray<ETutorialReclaim> TutorialesPendientes;
 
     FTimerHandle TimerCerrarTutorial;

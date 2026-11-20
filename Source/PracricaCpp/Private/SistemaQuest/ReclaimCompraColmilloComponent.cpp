@@ -27,7 +27,6 @@ void UReclaimCompraColmilloComponent::SolicitarDesbloqueo()
     ServidorSolicitarDesbloqueo();
 }
 
-
 void UReclaimCompraColmilloComponent::ServidorSolicitarDesbloqueo_Implementation()
 {
     APawn* Personaje = Cast<APawn>(GetOwner());
@@ -52,7 +51,33 @@ void UReclaimCompraColmilloComponent::ServidorSolicitarDesbloqueo_Implementation
         ClienteRecibirResultado(false, false);
         return;
     }
+    
+    if (ComponenteNivel->ObtenerNivel() >= 2)
+    {
+        UWorld* MundoActual = GetWorld();
 
+        if (MundoActual)
+        {
+            AGameStateBase* EstadoJuegoActual = MundoActual->GetGameState();
+
+            if (IsValid(EstadoJuegoActual))
+            {
+                UReclaimColmilloComponent* Colmillo =
+                    EstadoJuegoActual->FindComponentByClass<
+                        UReclaimColmilloComponent
+                    >();
+
+                if (IsValid(Colmillo) && Colmillo->EstaPendienteElegirArma())
+                {
+                    Colmillo->IniciarMisionNivel();
+
+                    ClienteRecibirResultado(false, false);
+                    return;
+                }
+            }
+        }
+    }
+    
     if (ComponenteNivel->ObtenerNivel() < 2)
     {
         UWorld* Mundo = GetWorld();

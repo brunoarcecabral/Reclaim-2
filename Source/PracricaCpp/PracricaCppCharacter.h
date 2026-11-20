@@ -49,7 +49,9 @@ public:
     APracricaCppCharacter();
 
 protected:
-
+    
+    void AlternarArma();
+    
     virtual void SetupPlayerInputComponent(
         class UInputComponent* PlayerInputComponent
     ) override;

@@ -64,6 +64,15 @@ class PRACRICACPP_API UReclaimSaveGame : public USaveGame
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
+	bool bTarjetaGuardada = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
+	bool bTarjetaRecogidaGuardada = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
+	bool bPuertaAbiertaGuardada = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
 	int32 VersionGuardado = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
@@ -77,7 +86,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
 	int32 Creditos = 0;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
+	FName IdArmaGuardada = NAME_None;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
+	bool bArmaEquipadaGuardada = false;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reclaim|Guardado")
 	int32 Nivel = 1;
 

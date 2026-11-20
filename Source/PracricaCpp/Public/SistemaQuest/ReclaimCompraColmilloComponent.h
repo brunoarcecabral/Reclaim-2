@@ -22,8 +22,7 @@ class PRACRICACPP_API UReclaimCompraColmilloComponent : public UActorComponent
 public:
 
 	UReclaimCompraColmilloComponent();
-
-	// El jugador que solicitó el colmillo recibe el resultado.
+	
 	UPROPERTY(BlueprintAssignable, Category = "Reclaim|Colmillo")
 	FResultadoCompraColmillo AlRecibirResultado;
 

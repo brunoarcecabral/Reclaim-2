@@ -30,19 +30,17 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Reclaim|Colmillo")
     FAlCambiarColmillo AlCambiarColmillo;
-
-    // Indica si el colmillo debe aparecer en la tienda.
+    
     UFUNCTION(BlueprintPure, Category = "Reclaim|Colmillo")
     bool EstaDisponibleEnTienda() const;
-
-    // Indica si ya se realizó el desbloqueo compartido.
+    
     UFUNCTION(BlueprintPure, Category = "Reclaim|Colmillo")
     bool YaFueComprado() const;
-
-    // El servidor inicia la misión de subir de nivel.
+    
     bool IniciarMisionNivel();
-
-    // El servidor entrega un colmillo a cada jugador conectado.
+    
+    bool EstaPendienteElegirArma() const;
+    
     bool EntregarColmilloAlGrupo();
 
 protected:
@@ -52,12 +50,13 @@ protected:
     virtual void EndPlay(
         const EEndPlayReason::Type EndPlayReason
     ) override;
-
-    // Misión que se inicia cuando el comprador no tiene nivel 2.
+    
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reclaim|Colmillo")
     TObjectPtr<UReclaimQuestData> MisionSubirNivel;
-
-    // Misión que se inicia cuando alguien alcanza nivel 2.
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reclaim|Colmillo")
+    TObjectPtr<UReclaimQuestData> MisionConseguirArma;
+    
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reclaim|Colmillo")
     TObjectPtr<UReclaimQuestData> MisionObtenerHabilidad;
 
@@ -80,5 +79,7 @@ private:
     UActorComponent* BuscarInventario(APawn* Personaje) const;
 
     void RevisarNivelDelGrupo();
+    
+    void RevisarArmasDelGrupo();
 };
 

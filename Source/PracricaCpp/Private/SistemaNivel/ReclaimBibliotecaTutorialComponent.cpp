@@ -20,6 +20,7 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "SistemaQuest/ReclaimNotaQuestWidget.h"
 #include "UI/ReclaimBibliotecaNotasWidget.h"
+#include "SistemaArmas/ReclaimArmaComponent.h"
 
 
 UReclaimBibliotecaTutorialComponent::UReclaimBibliotecaTutorialComponent()
@@ -433,7 +434,17 @@ UReclaimBibliotecaTutorialComponent::ObtenerTutorialesDisponibles() const
     }
 
     AGameStateBase* EstadoJuego = Mundo->GetGameState();
+    APawn* Personaje = Cast<APawn>(GetOwner());
 
+    UReclaimArmaComponent* Arma = IsValid(Personaje)
+        ? Personaje->FindComponentByClass<UReclaimArmaComponent>()
+        : nullptr;
+
+    if (IsValid(Arma) && Arma->TieneArma() && IsValid(TutorialArma))
+    {
+        Tutoriales.Add(TutorialArma);
+    }
+    
     if (!IsValid(EstadoJuego))
     {
         return Tutoriales;

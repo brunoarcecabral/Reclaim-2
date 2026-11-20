@@ -57,7 +57,10 @@ UReclaimTutorialNivelComponent::ObtenerDatosTutorial() const
 
         case ETutorialReclaim::WallRun:
             return DatosTutorialWallRun;
-
+        
+    case ETutorialReclaim::Arma:
+        return DatosTutorialArma;
+    
         default:
             return nullptr;
     }
@@ -75,6 +78,10 @@ bool UReclaimTutorialNivelComponent::AbrirTutorialWallRun()
     return SolicitarTutorial(ETutorialReclaim::WallRun);
 }
 
+bool UReclaimTutorialNivelComponent::AbrirTutorialArma()
+{
+    return SolicitarTutorial(ETutorialReclaim::Arma);
+}
 
 bool UReclaimTutorialNivelComponent::SolicitarTutorial(
     ETutorialReclaim Tutorial
@@ -112,7 +119,19 @@ bool UReclaimTutorialNivelComponent::SolicitarTutorial(
 
         return false;
     }
+    
+    if (Tutorial == ETutorialReclaim::Arma &&
+    !IsValid(DatosTutorialArma))
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("TUTORIAL: Falta asignar DA_TutorialArma.")
+        );
 
+        return false;
+    }
+    
     if (TutorialActual == Tutorial ||
         TutorialesPendientes.Contains(Tutorial))
     {
@@ -128,7 +147,6 @@ bool UReclaimTutorialNivelComponent::SolicitarTutorial(
     }
     else
     {
-        // Espera a que termine el tutorial que está abierto.
         TutorialesPendientes.Add(Tutorial);
     }
 
@@ -181,8 +199,7 @@ bool UReclaimTutorialNivelComponent::CerrarTutorial()
     {
         TutorialActual = TutorialesPendientes[0];
         TutorialesPendientes.RemoveAt(0);
-
-        // El siguiente tutorial recibe su propio tiempo completo.
+        
         IniciarTemporizador();
     }
     else

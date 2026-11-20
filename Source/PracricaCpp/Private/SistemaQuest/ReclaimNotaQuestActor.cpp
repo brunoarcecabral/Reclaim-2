@@ -285,6 +285,11 @@ bool AReclaimNotaQuestActor::RestaurarComoFinalizada()
     ForceNetUpdate();
 
     return true;
+    if (IsValid(NotaAdicionalAlFinalizar))
+    {
+        MulticastAvisarNotaAdicional();
+    }
+    
 }
 
 bool AReclaimNotaQuestActor::PuedeContinuar(
@@ -527,5 +532,14 @@ void AReclaimNotaQuestActor::CerrarVentanasLocales()
     }
 
     VentanasPorJugador.Empty();
+}
+void AReclaimNotaQuestActor::MulticastAvisarNotaAdicional_Implementation()
+{
+    if (GetNetMode() == NM_DedicatedServer)
+    {
+        return;
+    }
+
+    MostrarAvisoNotaAdicional();
 }
 

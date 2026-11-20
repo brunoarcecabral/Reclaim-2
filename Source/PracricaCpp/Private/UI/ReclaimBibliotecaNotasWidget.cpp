@@ -245,6 +245,28 @@ void UReclaimBibliotecaNotasWidget::ActualizarLista()
 
         NotasAgregadas.Add(Datos);
         ++CantidadNotas;
+        UReclaimNotaQuestData* NotaAdicional =
+    Nota->ObtenerNotaAdicionalFinalizada();
+
+        if (IsValid(NotaAdicional) &&
+            !NotasAgregadas.Contains(NotaAdicional))
+        {
+            UReclaimEntradaTutorialWidget* EntradaAdicional =
+                CreateWidget<UReclaimEntradaTutorialWidget>(
+                    Jugador,
+                    UReclaimEntradaTutorialWidget::StaticClass()
+                );
+
+            if (IsValid(EntradaAdicional))
+            {
+                EntradaAdicional->Configurar(NotaAdicional);
+                ListaNotas->AddChild(EntradaAdicional);
+
+                NotasAgregadas.Add(NotaAdicional);
+                ++CantidadNotas;
+            }
+        }
+        
     }
 
     if (IsValid(TextoSinNotas))
